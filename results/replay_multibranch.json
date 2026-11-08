@@ -1,0 +1,80 @@
+{
+ "xb/sql": {
+  "runs": 597,
+  "correct": 543,
+  "affected": 2,
+  "affected_correct": 2,
+  "recovered": 0,
+  "timeouts": 0,
+  "correct_if_sqlite": 543,
+  "sqlite_errors": {
+   "OperationalError: near <x>2026-10-01<x>: syntax error": 1,
+   "OperationalError: no such table: current_model_bomb": 1
+  }
+ },
+ "xb/sql_u": {
+  "runs": 597,
+  "correct": 556,
+  "affected": 10,
+  "affected_correct": 3,
+  "recovered": 2,
+  "timeouts": 0,
+  "correct_if_sqlite": 557,
+  "sqlite_errors": {
+   "OperationalError: near <x>2026-10-01<x>: syntax error": 4,
+   "OperationalError: near <x>: syntax error": 4
+  }
+ },
+ "aw/sql": {
+  "runs": 564,
+  "correct": 525,
+  "affected": 1,
+  "affected_correct": 0,
+  "recovered": 1,
+  "timeouts": 0,
+  "correct_if_sqlite": 526,
+  "sqlite_errors": {}
+ },
+ "aw/sql_u": {
+  "runs": 564,
+  "correct": 522,
+  "affected": 0,
+  "affected_correct": 0,
+  "recovered": 0,
+  "timeouts": 0,
+  "correct_if_sqlite": 522,
+  "sqlite_errors": {}
+ },
+ "lego/sql": {
+  "runs": 570,
+  "correct": 156,
+  "affected": 316,
+  "affected_correct": 2,
+  "recovered": 92,
+  "timeouts": 84,
+  "correct_if_sqlite": 247,
+  "sqlite_errors": {
+   "OperationalError: interrupted": 84,
+   "OperationalError: unrecognized token: <x>": 34,
+   "OperationalError: multiple references to recursive table: se": 19,
+   "OperationalError: near <x>: syntax error": 9,
+   "OperationalError: row value misused": 7
+  }
+ },
+ "lego/sql_u": {
+  "runs": 570,
+  "correct": 495,
+  "affected": 31,
+  "affected_correct": 2,
+  "recovered": 6,
+  "timeouts": 9,
+  "correct_if_sqlite": 500,
+  "sqlite_errors": {
+   "OperationalError: interrupted": 9,
+   "OperationalError: circular reference: exploded": 2,
+   "OperationalError: unrecognized token: <x>": 2,
+   "OperationalError: circular reference: exploded_contents": 1,
+   "OperationalError: circular reference: exploded_parts": 1
+  }
+ }
+}

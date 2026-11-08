@@ -1,0 +1,282 @@
+semantic_models:
+- name: product
+  description: Products (company models and sales SKUs) as the containing side of a BOM.
+  model: ref('dim_node')
+  entities:
+  - name: product
+    type: primary
+    expr: code
+  dimensions:
+  - name: name
+    type: categorical
+  - name: is_bundle
+    type: categorical
+    description: true for a bundle SKU (sales SKUs only)
+  - name: product_line
+    type: categorical
+    description: company models only
+- name: component
+  description: Components (assemblies and parts) as the contained side of a BOM.
+  model: ref('dim_node')
+  defaults:
+    agg_time_dimension: catalog_date
+  entities:
+  - name: component
+    type: primary
+    expr: code
+  dimensions:
+  - name: name
+    type: categorical
+  - name: category
+    type: categorical
+  - name: is_assembly
+    type: categorical
+    description: true for an assembly, false for a part (components only)
+  - name: unit_cost
+    type: categorical
+  - name: catalog_date
+    type: time
+    expr: DATE '2026-10-01'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: component_count
+    agg: sum
+    expr: case when kind = 'component' then 1 else 0 end
+- name: sku
+  description: Sales SKUs.
+  model: ref('dim_sku')
+  entities:
+  - name: sku
+    type: primary
+    expr: sku_code
+  dimensions:
+  - name: title
+    type: categorical
+  - name: is_bundle
+    type: categorical
+  - name: market
+    type: categorical
+- name: model
+  description: Company models.
+  model: ref('dim_model')
+  entities:
+  - name: model
+    type: primary
+    expr: model_code
+  dimensions:
+  - name: name
+    type: categorical
+  - name: product_line
+    type: categorical
+- name: store
+  description: Stores.
+  model: ref('dim_store')
+  entities:
+  - name: store
+    type: primary
+    expr: store_id
+  dimensions:
+  - name: name
+    type: categorical
+    expr: store_name
+  - name: platform
+    type: categorical
+  - name: country
+    type: categorical
+- name: explosion
+  description: 'Total requirements: quantity of each item per ONE unit of a product, multiplied along every path through all
+    levels and summed over paths, stored as validity intervals of constant quantity.'
+  model: ref('fct_explosion')
+  defaults:
+    agg_time_dimension: valid_from
+  primary_entity: explosion
+  entities:
+  - name: product
+    type: foreign
+    expr: root_code
+  - name: component
+    type: foreign
+    expr: item_code
+  dimensions:
+  - &id001
+    name: root_kind
+    type: categorical
+    description: 'kind of the product: ''model'' | ''sku'' (sales SKU, bundle or not)'
+  - &id002
+    name: valid_from
+    type: time
+    description: first day of the validity interval
+    type_params:
+      time_granularity: day
+  - &id003
+    name: valid_to
+    type: time
+    description: last day of the validity interval (NULL = open-ended)
+    type_params:
+      time_granularity: day
+  - &id004
+    name: is_current
+    type: categorical
+    description: true if the row is valid on 2026-10-01 (the current BOM)
+  measures:
+  - name: explosion_qty
+    agg: sum
+    expr: qty
+  - name: explosion_cost
+    agg: sum
+    expr: cost
+  - name: explosion_items
+    agg: count_distinct
+    expr: item_code
+  - name: explosion_roots
+    agg: count_distinct
+    expr: root_code
+- name: composition
+  description: Direct (first-level) BOM lines.
+  model: ref('fct_composition')
+  defaults:
+    agg_time_dimension: valid_from
+  primary_entity: composition
+  entities:
+  - name: product
+    type: foreign
+    expr: root_code
+  - name: component
+    type: foreign
+    expr: item_code
+  dimensions:
+  - *id001
+  - *id002
+  - *id003
+  - *id004
+  measures:
+  - name: composition_qty
+    agg: sum
+    expr: qty
+- name: sku_model
+  description: SKU to company model mapping (non-bundle SKUs).
+  model: ref('fct_sku_model')
+  defaults:
+    agg_time_dimension: map_date
+  primary_entity: sku_model
+  entities:
+  - name: sku
+    type: foreign
+    expr: sku_code
+  - name: model
+    type: foreign
+    expr: model_code
+  dimensions:
+  - name: map_date
+    type: time
+    expr: DATE '1900-01-01'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: sku_model_qty
+    agg: sum
+    expr: qty
+- name: listing
+  description: Store listings of sales SKUs.
+  model: ref('fct_listing')
+  defaults:
+    agg_time_dimension: listing_date
+  entities:
+  - name: listing
+    type: primary
+    expr: listing_id
+  - name: sku
+    type: foreign
+    expr: sku_code
+  - name: store
+    type: foreign
+    expr: store_id
+  dimensions:
+  - name: listing_date
+    type: time
+    expr: DATE '1900-01-01'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: listings
+    agg: count
+    expr: listing_id
+- name: order_line
+  description: Order lines (one row per order line, SKU level).
+  model: ref('fct_order_line')
+  defaults:
+    agg_time_dimension: order_date
+  entities:
+  - name: order_line
+    type: primary
+    expr: order_line_id
+  - name: sku
+    type: foreign
+    expr: sku_code
+  - name: store
+    type: foreign
+    expr: store_id
+  dimensions:
+  - name: order_date
+    type: time
+    type_params:
+      time_granularity: day
+  - name: status
+    type: categorical
+    description: '''completed'' | ''cancelled'''
+  measures:
+  - name: sku_units
+    agg: sum
+    expr: qty
+  - name: line_revenue
+    agg: sum
+    expr: revenue
+- name: model_sale
+  description: Order lines converted to company-model units (bundles expanded).
+  model: ref('fct_model_units')
+  defaults:
+    agg_time_dimension: order_date
+  primary_entity: model_sale
+  entities:
+  - name: model
+    type: foreign
+    expr: model_code
+  - name: store
+    type: foreign
+    expr: store_id
+  dimensions:
+  - name: order_date
+    type: time
+    type_params:
+      time_granularity: day
+  - name: status
+    type: categorical
+  measures:
+  - name: model_units
+    agg: sum
+    expr: units
+- name: consumption
+  description: Order lines exploded to components with the BOM valid on each order date.
+  model: ref('fct_part_consumption')
+  defaults:
+    agg_time_dimension: order_date
+  primary_entity: consumption
+  entities:
+  - name: component
+    type: foreign
+    expr: component_code
+  - name: store
+    type: foreign
+    expr: store_id
+  dimensions:
+  - name: order_date
+    type: time
+    type_params:
+      time_granularity: day
+  - name: status
+    type: categorical
+  measures:
+  - name: consumed_units
+    agg: sum
+    expr: units

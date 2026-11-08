@@ -1,0 +1,198 @@
+semantic_models:
+- name: product
+  description: Products (identified by product_number), as BOM product or as sold product.
+  model: ref('dim_product')
+  defaults:
+    agg_time_dimension: catalog_date
+  entities:
+  - name: product
+    type: primary
+    expr: product_number
+  dimensions:
+  - name: name
+    type: categorical
+  - name: color
+    type: categorical
+  - name: subcategory
+    type: categorical
+  - name: category
+    type: categorical
+  - name: product_line
+    type: categorical
+  - name: make_flag
+    type: categorical
+    description: true = manufactured, false = purchased part
+  - name: is_finished_good
+    type: categorical
+  - name: standard_cost
+    type: categorical
+  - name: list_price
+    type: categorical
+  - name: catalog_date
+    type: time
+    expr: DATE '2025-06-30'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: product_count
+    agg: count
+    expr: product_number
+- name: component
+  description: Products as the contained side of a BOM (components / parts / sub-assemblies).
+  model: ref('dim_product')
+  entities:
+  - name: component
+    type: primary
+    expr: product_number
+  dimensions:
+  - name: name
+    type: categorical
+  - name: make_flag
+    type: categorical
+    description: true = manufactured sub-assembly, false = purchased part
+  - name: is_finished_good
+    type: categorical
+  - name: subcategory
+    type: categorical
+  - name: category
+    type: categorical
+  - name: standard_cost
+    type: categorical
+- name: territory
+  description: Sales territories.
+  model: ref('dim_territory')
+  entities:
+  - name: territory
+    type: primary
+    expr: territory_id
+  dimensions:
+  - name: name
+    type: categorical
+  - name: country
+    type: categorical
+    expr: country_code
+  - name: group
+    type: categorical
+    expr: territory_group
+- name: explosion
+  description: 'Total requirements: quantity of each component per ONE unit of a product through all BOM levels, stored as
+    validity intervals of constant quantity.'
+  model: ref('fct_explosion')
+  defaults:
+    agg_time_dimension: valid_from
+  primary_entity: explosion
+  entities:
+  - name: product
+    type: foreign
+    expr: root_code
+  - name: component
+    type: foreign
+    expr: item_code
+  dimensions:
+  - &id001
+    name: valid_from
+    type: time
+    description: first day of the validity interval
+    type_params:
+      time_granularity: day
+  - &id002
+    name: valid_to
+    type: time
+    description: last day of the validity interval (NULL = open-ended)
+    type_params:
+      time_granularity: day
+  - &id003
+    name: is_current
+    type: categorical
+    description: true if the row is valid on 2025-06-30 (the current BOM)
+  measures:
+  - name: explosion_qty
+    agg: sum
+    expr: qty
+  - name: explosion_cost
+    agg: sum
+    expr: cost
+  - name: explosion_items
+    agg: count_distinct
+    expr: item_code
+  - name: explosion_roots
+    agg: count_distinct
+    expr: root_code
+- name: composition
+  description: Direct (first-level) BOM lines.
+  model: ref('fct_composition')
+  defaults:
+    agg_time_dimension: valid_from
+  primary_entity: composition
+  entities:
+  - name: product
+    type: foreign
+    expr: root_code
+  - name: component
+    type: foreign
+    expr: item_code
+  dimensions:
+  - *id001
+  - *id002
+  - *id003
+  measures:
+  - name: composition_qty
+    agg: sum
+    expr: qty
+- name: sales_line
+  description: Sales order lines.
+  model: ref('fct_sales_line')
+  defaults:
+    agg_time_dimension: order_date
+  entities:
+  - name: sales_line
+    type: primary
+    expr: sales_line_id
+  - name: product
+    type: foreign
+    expr: product_number
+  - name: territory
+    type: foreign
+    expr: territory_id
+  dimensions:
+  - name: order_date
+    type: time
+    type_params:
+      time_granularity: day
+  - name: online
+    type: categorical
+    description: true = online (individual) order, false = reseller
+    expr: online_order
+  measures:
+  - name: sold_units
+    agg: sum
+    expr: order_qty
+  - name: line_total
+    agg: sum
+    expr: line_total
+- name: demand
+  description: Units of each product required by order lines (sold directly plus contained at any level, BOM valid on the
+    order date).
+  model: ref('fct_component_demand')
+  defaults:
+    agg_time_dimension: order_date
+  primary_entity: demand
+  entities:
+  - name: component
+    type: foreign
+    expr: component_number
+  - name: territory
+    type: foreign
+    expr: territory_id
+  dimensions:
+  - name: order_date
+    type: time
+    type_params:
+      time_granularity: day
+  - name: online
+    type: categorical
+    expr: online_order
+  measures:
+  - name: demand_units
+    agg: sum
+    expr: units

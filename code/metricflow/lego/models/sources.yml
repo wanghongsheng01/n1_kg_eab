@@ -1,0 +1,13 @@
+version: 2
+sources:
+- name: x
+  schema: main
+  tables:
+  - name: themes
+  - name: sets
+  - name: parts
+  - name: part_categories
+  - name: minifigs
+  - name: colors
+  - name: u_composition
+  - name: u_explosion

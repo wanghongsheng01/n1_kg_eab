@@ -1,0 +1,181 @@
+semantic_models:
+- name: set
+  description: LEGO sets. A set belongs to theme T or one of its sub-themes iff T is one of theme_level_1..theme_level_3.
+  model: ref('dim_set')
+  defaults:
+    agg_time_dimension: release_date
+  entities:
+  - name: set
+    type: primary
+    expr: set_num
+  dimensions:
+  - name: name
+    type: categorical
+  - name: release_year
+    type: categorical
+    description: release year (integer)
+    expr: year
+  - name: num_parts
+    type: categorical
+    description: catalogue piece count (not an explosion)
+  - name: theme_name
+    type: categorical
+    description: the set's own theme
+  - name: theme_root
+    type: categorical
+    description: top-level ancestor theme
+  - name: theme_level_1
+    type: categorical
+    description: theme path, level 1 (= theme_root)
+  - name: theme_level_2
+    type: categorical
+    description: theme path, level 2
+  - name: theme_level_3
+    type: categorical
+    description: theme path, level 3
+  - name: release_date
+    type: time
+    type_params:
+      time_granularity: year
+  measures:
+  - name: set_count
+    agg: count
+    expr: set_num
+- name: item
+  description: 'Items: parts (part_num), minifigs (fig_num) and sets (set_num).'
+  model: ref('dim_item')
+  entities:
+  - name: item
+    type: primary
+    expr: code
+  dimensions:
+  - name: name
+    type: categorical
+  - name: category
+    type: categorical
+    description: part category (parts only)
+- name: color
+  description: Colours.
+  model: ref('dim_color')
+  entities:
+  - name: color
+    type: primary
+    expr: color_id
+  dimensions:
+  - name: name
+    type: categorical
+- name: explosion
+  description: 'Exploded contents: quantity of each item per ONE unit of a root set / minifig, through nested sets and minifigs
+    (quantities multiply along the path and sum over paths). One row group per inventory version of the ROOT; nested sets
+    and minifigs always contribute their own current inventory.'
+  model: ref('fct_explosion')
+  defaults:
+    agg_time_dimension: snapshot_date
+  primary_entity: explosion
+  entities:
+  - name: set
+    type: foreign
+    expr: root_num
+  - name: item
+    type: foreign
+    expr: item_num
+  - name: color
+    type: foreign
+    expr: color_id
+  dimensions:
+  - &id001
+    name: root_kind
+    type: categorical
+    description: '''set'' | ''minifig'' (a minifig''s own inventory)'
+  - &id002
+    name: root_version
+    type: categorical
+    description: inventory version of the root set (1, 2, ...)
+  - &id003
+    name: is_current
+    type: categorical
+    description: true for the root's current (highest-version) inventory
+  - &id004
+    name: item_kind
+    type: categorical
+    description: '''part'' | ''minifig'' | ''set'''
+  - &id005
+    name: is_spare
+    type: categorical
+    description: true if the part line is a spare part
+  - &id006
+    name: snapshot_date
+    type: time
+    expr: DATE '2026-01-01'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: explosion_qty
+    agg: sum
+    expr: qty
+  - name: explosion_items
+    agg: count_distinct
+    expr: item_num
+  - name: explosion_part_colors
+    agg: count_distinct
+    expr: part_color
+  - name: explosion_colors
+    agg: count_distinct
+    expr: color_id
+  - name: explosion_roots
+    agg: count_distinct
+    expr: root_num
+- name: composition
+  description: First-level inventory lines (no explosion; spares listed as is).
+  model: ref('fct_composition')
+  defaults:
+    agg_time_dimension: snapshot_date
+  primary_entity: composition
+  entities:
+  - name: set
+    type: foreign
+    expr: root_num
+  - name: item
+    type: foreign
+    expr: item_num
+  - name: color
+    type: foreign
+    expr: color_id
+  dimensions:
+  - *id001
+  - *id002
+  - *id003
+  - *id004
+  - *id005
+  - *id006
+  measures:
+  - name: composition_qty
+    agg: sum
+    expr: qty
+  - name: composition_items
+    agg: count_distinct
+    expr: item_num
+- name: inventory
+  description: Inventory versions of sets.
+  model: ref('fct_inventory')
+  defaults:
+    agg_time_dimension: inventory_date
+  primary_entity: inventory
+  entities:
+  - name: set
+    type: foreign
+    expr: set_num
+  dimensions:
+  - name: version
+    type: categorical
+  - name: is_current
+    type: categorical
+  - name: inventory_date
+    type: time
+    expr: DATE '2026-01-01'
+    type_params:
+      time_granularity: day
+  measures:
+  - name: inventory_count
+    agg: count
+    expr: version

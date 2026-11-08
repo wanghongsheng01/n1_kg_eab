@@ -63,10 +63,10 @@ u_composition(parent_kind VARCHAR, parent_num VARCHAR, version INT, child_kind V
 
 {RULES_U}"""
 
-# Uniform across datasets (main study): syntax notes only, identical in content to xb and aw; no hints that steer
-# traversal across typed edges (multi-type patterns, EXISTS subqueries) so that the typed-vs-unified contrast is not confounded.
+# Uniform across datasets (main study): syntax notes only, identical in content to xb and aw, including the multi-type
+# pattern syntax (A|B); no EXISTS hints. The note without the multi-type sentence is the ablation cypher_nh.
 DIALECT = """Kuzu dialect notes: variable-length patterns need an upper bound, e.g. -[e:R*1..6]->; a predicate on every
-relationship of a variable-length pattern is written -[e:R*1..6 (r, n | WHERE r.qty > 0)]->; rels(e) returns the
+relationship of a variable-length pattern is written -[e:R*1..6 (r, n | WHERE r.qty > 0)]->; several relationship types are matched with -[e:A|B*1..6]->; rels(e) returns the
 relationship list, properties(rels(e), 'qty') the list of qty values, list_product(list) multiplies a list;
 list_product of an empty list is 1 (so *0..k paths work)."""
 
@@ -115,11 +115,31 @@ Relationships (one composition relationship CONTAINS, one edge per inventory lin
 
 {RULES_U}"""
 
+# Closure substrates (code/build_closure.py): SQL-U / Graph-U plus the materialized total-contents relation; same rules text.
+_X_MEANING = """qty = total quantity of the item contained in ONE unit of the root when the root's own inventory is version
+   -- root_version, multiplied along every nesting path and summed over all paths; one row per root, root_version and item
+   -- at any level below it (nested sets, minifigs and parts alike); is_current = true for the root's current inventory
+   -- version; for a part item, color_id and is_spare are those of the inventory line it comes from (color_id NULL and
+   -- is_spare FALSE for set and minifig items)"""
+_U_LAST_SQL = "   -- color_id is NULL and is_spare FALSE unless child_kind = 'part'\n"
+SQL_X_DOC = SQL_U_DOC.replace(_U_LAST_SQL, _U_LAST_SQL + """u_explosion(root_kind VARCHAR, root_num VARCHAR, root_version INT, is_current BOOLEAN, item_kind VARCHAR, item_num VARCHAR,
+            color_id INT -> colors, is_spare BOOLEAN, qty BIGINT)
+   -- materialized from u_composition (kinds and nums as there):
+   -- """ + _X_MEANING + "\n")
+_U_LAST_KG = "   -- color_id = Color.id for part edges (NULL otherwise); is_spare is FALSE for non-part edges\n"
+CYPHER_X_DOC = CYPHER_U_DOC.replace(_U_LAST_KG, _U_LAST_KG + "".join(
+    f"({a})-[:EXPLODES {{root_version INT64, is_current BOOLEAN, qty, color_id INT64, is_spare BOOLEAN}}]->({b})\n" for a, b in
+    [(":Set", ":Set"), (":Set", ":Minifig"), (":Set", ":Part"), (":Minifig", ":Part")]) +
+    "   -- materialized from CONTAINS; start node = root, end node = item:\n   -- " + _X_MEANING + "\n")
+assert SQL_X_DOC != SQL_U_DOC and CYPHER_X_DOC != CYPHER_U_DOC
+
 TASK = {
     "sql": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_DOC),
     "cypher": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_DOC),
     "sql_u": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_U_DOC),
     "cypher_u": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_U_DOC),
+    "sql_x": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_X_DOC),
+    "cypher_x": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_X_DOC),
     "semantic_abs": ("Write ONE semantic-layer JSON query that answers the question. Return only the JSON in a ```json block. "
                      "If no metric can express the question, reply with the single word UNSUPPORTED instead of a query.", SPEC),
     "hybrid": ("Prefer ONE semantic-layer JSON query (in a ```json block). Only if no metric can express the question, write ONE "

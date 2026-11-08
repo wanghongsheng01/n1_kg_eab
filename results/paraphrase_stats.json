@@ -1,0 +1,301 @@
+{
+ "generator": "gpt-6-sol",
+ "generator_temperature": 0.7,
+ "verifier": "claude-opus-5.5",
+ "max_attempts": 3,
+ "edit_distance_note": "char_lev_norm = character Levenshtein / max length; word_lev_norm = word Levenshtein / max word count; jaccard_dist = 1 - Jaccard of lower-cased word sets; 'accepted' excludes fallbacks (identical to the original)",
+ "xb": {
+  "n": 199,
+  "accepted_first_try": 196,
+  "accepted_after_retries": 3,
+  "fallback_original": 0,
+  "rejections": {
+   "bad_json": 0,
+   "tokens": 0,
+   "verifier": 3
+  },
+  "mean_accepted": {
+   "char_lev": 78.2312,
+   "char_lev_norm": 0.498,
+   "word_lev_norm": 0.6407,
+   "jaccard_dist": 0.4074
+  },
+  "mean_all": {
+   "char_lev": 78.2312,
+   "char_lev_norm": 0.498,
+   "word_lev_norm": 0.6407,
+   "jaccard_dist": 0.4074
+  },
+  "examples": [
+   {
+    "qid": "E04",
+    "tpl": "E1",
+    "original": "In total, how many units of part TAB-957-WHT-01956 are needed to build one unit of company model AL4-120WAL24-0509 under the current BOM, counting all sub-assembly levels?",
+    "paraphrase": "For 1 unit of company model AL4-120WAL24-0509, how many units of part TAB-957-WHT-01956 do we need in total using the current BOM, including every sub-assembly level?",
+    "attempts": 1
+   },
+   {
+    "qid": "A08",
+    "tpl": "A1",
+    "original": "How many units of company model SW4-120BLK46-0337 were sold in completed orders in 2024, counting both SKUs that map to it directly and SKUs inside bundles?",
+    "paraphrase": "Tell me the number of units of company model SW4-120BLK46-0337 sold in completed orders in 2024, including both SKUs mapped to it directly and SKUs within bundles.",
+    "attempts": 1
+   },
+   {
+    "qid": "L21",
+    "tpl": "L1c",
+    "original": "List the codes of the components that company model CO4-120WHT49-0049 uses directly (first level only) in its current BOM.",
+    "paraphrase": "Can you give me the component codes directly in the current BOM for company model CO4-120WHT49-0049, just the first level?",
+    "attempts": 1
+   },
+   {
+    "qid": "L04",
+    "tpl": "L1a",
+    "original": "Which company model does the sales SKU SW3-120WHT12-JPP-78 map to? Return the model code.",
+    "paraphrase": "Could you tell me the company model code associated with sales SKU SW3-120WHT12-JPP-78?",
+    "attempts": 1
+   },
+   {
+    "qid": "V09",
+    "tpl": "V1",
+    "original": "How many units of part FOO-140-GRY-02859 did one unit of company model ER5-120BLK16-0210 require on 2023-05-20, counting all sub-assembly levels of the BOM valid on that date?",
+    "paraphrase": "Could you tell me the number of units of part FOO-140-GRY-02859 required for 1 unit of company model ER5-120BLK16-0210 on 2023-05-20, including every sub-assembly level in the BOM valid on that date?",
+    "attempts": 1
+   },
+   {
+    "qid": "W11",
+    "tpl": "W1",
+    "original": "How many company models contain component CON-983-GRY-02244 at any level (directly or inside sub-assemblies) under the current BOM?",
+    "paraphrase": "In the current BOM, how many company models have component CON-983-GRY-02244 anywhere in them, either directly or inside a sub-assembly?",
+    "attempts": 1
+   },
+   {
+    "qid": "W33",
+    "tpl": "W4",
+    "original": "How many bundle SKUs contain company model AL6-140GRY69-0457 through at least one of their item SKUs?",
+    "paraphrase": "How many bundle SKUs have at least one item SKU that maps to company model AL6-140GRY69-0457?",
+    "attempts": 1
+   },
+   {
+    "qid": "V02",
+    "tpl": "V1",
+    "original": "How many units of part BRA-420-OAK-01867 did one unit of company model VI7-160GRY11-0496 require on 2026-01-01, counting all sub-assembly levels of the BOM valid on that date?",
+    "paraphrase": "For 1 unit of company model VI7-160GRY11-0496, how many units of part BRA-420-OAK-01867 were needed on 2026-01-01, counting every sub-assembly level in the BOM valid that day?",
+    "attempts": 1
+   },
+   {
+    "qid": "E23",
+    "tpl": "E2",
+    "original": "How many distinct parts (non-assembly components) does company model AE3-120GRY09-0785 contain at any level of its current BOM?",
+    "paraphrase": "For company model AE3-120GRY09-0785, across any level of its current BOM, what is the number of distinct parts (non-assembly components) it contains?",
+    "attempts": 1
+   },
+   {
+    "qid": "W32",
+    "tpl": "W3",
+    "original": "How many non-bundle sales SKUs contain part BRA-917-OAK-02552 at any level under the current BOM?",
+    "paraphrase": "Under the current BOM, how many non-bundle sales SKUs include part BRA-917-OAK-02552 at any level?",
+    "attempts": 1
+   }
+  ],
+  "fallback_qids": []
+ },
+ "aw": {
+  "n": 188,
+  "accepted_first_try": 185,
+  "accepted_after_retries": 3,
+  "fallback_original": 0,
+  "rejections": {
+   "bad_json": 0,
+   "tokens": 0,
+   "verifier": 3
+  },
+  "mean_accepted": {
+   "char_lev": 68.633,
+   "char_lev_norm": 0.4966,
+   "word_lev_norm": 0.6243,
+   "jaccard_dist": 0.425
+  },
+  "mean_all": {
+   "char_lev": 68.633,
+   "char_lev_norm": 0.4966,
+   "word_lev_norm": 0.6243,
+   "jaccard_dist": 0.425
+  },
+  "examples": [
+   {
+    "qid": "AW-E26",
+    "tpl": "E3",
+    "original": "What is the purchased-parts cost of one unit of product BK-M18B-52 under the current BOM, i.e. the sum over all parts at any level of (quantity per unit x standard cost)? Round to 2 decimals.",
+    "paraphrase": "Under the current BOM, what is the total purchased-parts cost for one unit of product BK-M18B-52, summing (quantity per unit x standard cost) for all parts at any level? Round to 2 decimals.",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-W29",
+    "tpl": "W4",
+    "original": "How many bikes of subcategory 'Touring Bikes' contain component RC-0291 at any level of their current BOM?",
+    "paraphrase": "What is the number of bikes in subcategory 'Touring Bikes' whose current BOM includes component RC-0291 at any level?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-V09",
+    "tpl": "V1",
+    "original": "What quantity of part MS-2341 did one unit of product FR-M63S-40 require under the BOM valid on 2021-10-05, counting all sub-assembly levels?",
+    "paraphrase": "For one unit of product FR-M63S-40, how many of part MS-2341 were needed under the BOM valid on 2021-10-05, including all sub-assembly levels?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-E25",
+    "tpl": "E3",
+    "original": "What is the purchased-parts cost of one unit of product BK-R79Y-44 under the current BOM, i.e. the sum over all parts at any level of (quantity per unit x standard cost)? Round to 2 decimals.",
+    "paraphrase": "Under the current BOM, what is the purchased-parts cost for one unit of product BK-R79Y-44, summing (quantity per unit x standard cost) for all parts at any level and rounding to 2 decimals?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-W10",
+    "tpl": "W1",
+    "original": "How many bikes contain component PA-529S at any level of their current BOM (directly or inside sub-assemblies)?",
+    "paraphrase": "In their current BOM, how many bikes include component PA-529S at any level, either directly or inside sub-assemblies?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-W13",
+    "tpl": "W2",
+    "original": "List the product numbers of all bikes that contain component SE-T924 at any level of their current BOM (directly or inside sub-assemblies).",
+    "paraphrase": "In the current BOM, which bike product numbers include component SE-T924 at any level, whether directly or within sub-assemblies?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-V32",
+    "tpl": "V4",
+    "original": "How many bikes contained component SA-R127 at any level of their BOM on 2021-07-01?",
+    "paraphrase": "Tell me the number of bikes whose BOM included component SA-R127 at any level on 2021-07-01.",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-V13",
+    "tpl": "V2",
+    "original": "List the product numbers of the components that product HB-M918 used directly (first BOM level) on 2021-09-26.",
+    "paraphrase": "On 2021-09-26, which product numbers were for the components used directly (first BOM level) by product HB-M918?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-L20",
+    "tpl": "L5",
+    "original": "How many products in subcategory 'Handlebars' have a list price above 61?",
+    "paraphrase": "Could you tell me the number of products in the 'Handlebars' subcategory with a list price greater than 61?",
+    "attempts": 1
+   },
+   {
+    "qid": "AW-V20",
+    "tpl": "V3",
+    "original": "How many distinct parts (purchased components) did product HB-M243 contain at any level of the BOM valid on 2021-07-11?",
+    "paraphrase": "What is the number of distinct purchased parts in product HB-M243 at any BOM level valid on 2021-07-11?",
+    "attempts": 1
+   }
+  ],
+  "fallback_qids": []
+ },
+ "lego": {
+  "n": 190,
+  "accepted_first_try": 190,
+  "accepted_after_retries": 0,
+  "fallback_original": 0,
+  "rejections": {
+   "bad_json": 0,
+   "tokens": 0,
+   "verifier": 0
+  },
+  "mean_accepted": {
+   "char_lev": 77.4789,
+   "char_lev_norm": 0.5011,
+   "word_lev_norm": 0.6153,
+   "jaccard_dist": 0.413
+  },
+  "mean_all": {
+   "char_lev": 77.4789,
+   "char_lev_norm": 0.5011,
+   "word_lev_norm": 0.6153,
+   "jaccard_dist": 0.413
+  },
+  "examples": [
+   {
+    "qid": "LG-V30",
+    "tpl": "V5",
+    "original": "How many parts in total (sum of quantities at all levels) did version 3 of the inventory of LEGO set 41435-1 contain?",
+    "paraphrase": "What was the total part quantity across all levels in version 3 of the inventory for LEGO set 41435-1?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-W26",
+    "tpl": "W4",
+    "original": "How many LEGO sets released in 2017 contain part 30089b in colour Black at any level, directly or inside a nested set or minifig?",
+    "paraphrase": "Among LEGO sets released in 2017, how many contain part 30089b in colour Black at any level, whether directly or inside a nested set or minifig?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-W16",
+    "tpl": "W2",
+    "original": "How many LEGO sets contain part 6153b in colour Blue at any level of their current inventory, i.e. directly or inside a nested set or minifig?",
+    "paraphrase": "Could you tell me how many LEGO sets have part 6153b in colour Blue anywhere in their current inventory, whether directly or within a nested set or minifig?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-E06",
+    "tpl": "E1",
+    "original": "In total, how many units of part 970c05 (in any colour) does one LEGO set 60157-1 contain, counting all levels, i.e. the parts inside its nested sets and minifigs as well?",
+    "paraphrase": "How many units of part 970c05, in any colour, are in one LEGO set 60157-1 across all levels, including parts in nested sets and minifigs?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-W04",
+    "tpl": "W1",
+    "original": "How many LEGO sets contain part 11438 (in any colour) at any level of their current inventory, i.e. directly or inside a nested set or minifig?",
+    "paraphrase": "Across current inventories, including parts listed directly or within a nested set or minifig at any level, how many LEGO sets contain part 11438 in any colour?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-V28",
+    "tpl": "V4",
+    "original": "How many minifigs in total (sum of quantities, including minifigs inside nested sets) did version 1 of the inventory of LEGO set 60441-1 contain?",
+    "paraphrase": "What was the total quantity of minifigs in version 1 of the inventory for LEGO set 60441-1, including those inside nested sets?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-A11",
+    "tpl": "A2",
+    "original": "Across all LEGO sets released in 2024 in the theme 'Collectible Minifigures' including its sub-themes, how many minifigs are there in total (sum of quantities, minifigs inside nested sets included, each set counted on its own)?",
+    "paraphrase": "For LEGO sets released in 2024 under 'Collectible Minifigures' or any of its sub-themes, what's the total number of minifigs? Add up their quantities, include minifigs in nested sets, and count each set separately.",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-A32",
+    "tpl": "A5",
+    "original": "Summed over all LEGO sets released in 2018 (each set's current inventory exploded on its own, including nested sets and minifigs), how many units of part 2454b in colour Tan are there?",
+    "paraphrase": "Could you tell me the total number of units of part 2454b in colour Tan across all LEGO sets released in 2018, using each set's current inventory and counting parts in nested sets and minifigs?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-E47",
+    "tpl": "E8",
+    "original": "How many parts of the part category 'Bars, Ladders and Fences' (sum of quantities) does LEGO set 30662-2 contain at all levels, including its nested sets and minifigs?",
+    "paraphrase": "Across all levels of LEGO set 30662-2, including its nested sets and minifigs, what is the total quantity of parts in the part category 'Bars, Ladders and Fences'?",
+    "attempts": 1
+   },
+   {
+    "qid": "LG-E29",
+    "tpl": "E5",
+    "original": "How many distinct part/colour combinations occur in LEGO set 71497-1 at any level, including inside its nested sets and minifigs?",
+    "paraphrase": "At any level of LEGO set 71497-1, including inside its nested sets and minifigs, what is the number of distinct part/colour combinations?",
+    "attempts": 1
+   }
+  ],
+  "fallback_qids": []
+ },
+ "total": {
+  "n": 577,
+  "accepted_first_try": 571,
+  "accepted_after_retries": 6,
+  "fallback_original": 0
+ }
+}

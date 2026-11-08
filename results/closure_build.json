@@ -1,0 +1,110 @@
+{
+ "aw": {
+  "cypher_x": {
+   "base_file_bytes": 26136576,
+   "closure_s": 0.11,
+   "db": "data/aw_x.kuzu",
+   "file_bytes": 27103232,
+   "n_edges_input": 2576,
+   "rel_pairs": [
+    "Product->Product"
+   ],
+   "rel_rows": 11509,
+   "total_build_s": 0.27
+  },
+  "sql_x": {
+   "base_file_bytes": 3682304,
+   "closure_s": 0.04,
+   "db": "data/aw_x.duckdb",
+   "file_bytes": 4206592,
+   "n_edges_input": 2576,
+   "rows": 11509,
+   "stats": {
+    "max_intervals_per_pair": 6,
+    "roots": 238,
+    "rows_closed_interval": 2360,
+    "rows_per_composition_edge": 4.47
+   },
+   "total_build_s": 0.07
+  }
+ },
+ "lego": {
+  "cypher_x": {
+   "base_file_bytes": 61984768,
+   "closure_s": 3.34,
+   "db": "data/lego_x.kuzu",
+   "file_bytes": 97198080,
+   "n_edges_input": 1215571,
+   "rel_pairs": [
+    "Minifig->Part",
+    "Set->Minifig",
+    "Set->Part",
+    "Set->Set"
+   ],
+   "rel_rows": 1423217,
+   "total_build_s": 4.8
+  },
+  "sql_x": {
+   "base_file_bytes": 14692352,
+   "closure_s": 2.49,
+   "db": "data/lego_x.duckdb",
+   "file_bytes": 27013120,
+   "n_edges_input": 1215571,
+   "rows": 1423217,
+   "stats": {
+    "root_versions": 27200,
+    "roots": 26514,
+    "rows_by_kind": {
+     "minifig->part": 63425,
+     "set->minifig": 21967,
+     "set->part": 1334508,
+     "set->set": 3317
+    },
+    "rows_not_current": 93118,
+    "rows_per_composition_edge": 1.17,
+    "rows_spare": 109970
+   },
+   "total_build_s": 3.88
+  }
+ },
+ "xb": {
+  "cypher_x": {
+   "base_file_bytes": 30412800,
+   "closure_s": 1.73,
+   "db": "data/xb_x.kuzu",
+   "file_bytes": 39702528,
+   "n_edges_input": 15831,
+   "rel_pairs": [
+    "Component->Component",
+    "Model->Component",
+    "SKU->Component",
+    "SKU->Model",
+    "SKU->SKU"
+   ],
+   "rel_rows": 277755,
+   "total_build_s": 2.31
+  },
+  "sql_x": {
+   "base_file_bytes": 3420160,
+   "closure_s": 1.62,
+   "db": "data/xb_x.duckdb",
+   "file_bytes": 6565888,
+   "n_edges_input": 15831,
+   "rows": 277415,
+   "stats": {
+    "max_intervals_per_pair": 7,
+    "roots": 4993,
+    "rows_by_kind": {
+     "component->component": 11978,
+     "model->component": 39103,
+     "sku->component": 220465,
+     "sku->model": 4666,
+     "sku->sku": 1203
+    },
+    "rows_closed_interval": 97909,
+    "rows_per_composition_edge": 17.52
+   },
+   "total_build_s": 1.88
+  }
+ }
+}

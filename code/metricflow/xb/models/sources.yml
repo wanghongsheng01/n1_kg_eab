@@ -1,0 +1,14 @@
+version: 2
+sources:
+- name: x
+  schema: main
+  tables:
+  - name: company_model
+  - name: component
+  - name: listing
+  - name: order_line
+  - name: orders
+  - name: sales_sku
+  - name: store
+  - name: u_composition
+  - name: u_explosion

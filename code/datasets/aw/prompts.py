@@ -108,11 +108,27 @@ Relationships:
 
 {RULES_U}"""
 
+# Closure substrates (code/build_closure.py): SQL-U / Graph-U plus the materialized total-requirements relation; same rules text.
+_X_MEANING = """qty = total quantity of the item contained in ONE unit of the root, multiplied along every composition path and summed
+   -- over all paths, on every date d with valid_from <= d and (valid_to IS NULL or d <= valid_to); one row per root, item at
+   -- any level below it (sub-assemblies and parts alike) and interval of constant qty"""
+_U_CODES = "   -- codes are product.product_number\n"
+SQL_X_DOC = SQL_U_DOC.replace(_U_CODES, _U_CODES + """u_explosion(root_code VARCHAR, item_code VARCHAR, qty DOUBLE, valid_from DATE, valid_to DATE)
+   -- materialized from u_composition (codes as there):
+   -- """ + _X_MEANING + "\n")
+_U_LAST = "(:Product)-[:CONTAINS {qty DOUBLE, unit, valid_from DATE, valid_to DATE}]->(:Product)   -- one BOM line: parent -> child\n"
+CYPHER_X_DOC = CYPHER_U_DOC.replace(_U_LAST, _U_LAST + """(:Product)-[:EXPLODES {qty DOUBLE, valid_from DATE, valid_to DATE}]->(:Product)
+   -- materialized from CONTAINS; start node = root, end node = item:
+   -- """ + _X_MEANING + "\n")
+assert SQL_X_DOC != SQL_U_DOC and CYPHER_X_DOC != CYPHER_U_DOC
+
 TASK = {
     "sql": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_DOC),
     "cypher": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_DOC),
     "sql_u": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_U_DOC),
     "cypher_u": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_U_DOC),
+    "sql_x": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_X_DOC),
+    "cypher_x": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_X_DOC),
     "semantic_abs": ("Write ONE semantic-layer JSON query that answers the question. Return only the JSON in a ```json block. "
                      "If no metric can express the question, reply with the single word UNSUPPORTED instead of a query.", SPEC),
     "hybrid": ("Prefer ONE semantic-layer JSON query (in a ```json block). Only if no metric can express the question, write ONE "

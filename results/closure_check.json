@@ -1,0 +1,612 @@
+{
+ "xb": {
+  "structure": {
+   "overlapping_pairs": 0,
+   "empty_or_nonpositive": 0,
+   "unmerged_adjacent": 0,
+   "ok": true
+  },
+  "triples": {
+   "n": 200,
+   "passed": 200,
+   "failed": 0,
+   "zero_expected": 57,
+   "failures": []
+  },
+  "questions": {
+   "n": 199,
+   "passed": 199,
+   "failed": 0,
+   "per_class": {
+    "A": {
+     "passed": 48,
+     "failed": 0
+    },
+    "E": {
+     "passed": 48,
+     "failed": 0
+    },
+    "L": {
+     "passed": 24,
+     "failed": 0
+    },
+    "V": {
+     "passed": 40,
+     "failed": 0
+    },
+    "W": {
+     "passed": 39,
+     "failed": 0
+    }
+   },
+   "per_template": {
+    "A1": {
+     "passed": 12,
+     "failed": 0
+    },
+    "A2": {
+     "passed": 12,
+     "failed": 0
+    },
+    "A3": {
+     "passed": 12,
+     "failed": 0
+    },
+    "A4": {
+     "passed": 12,
+     "failed": 0
+    },
+    "E1": {
+     "passed": 12,
+     "failed": 0
+    },
+    "E2": {
+     "passed": 12,
+     "failed": 0
+    },
+    "E3": {
+     "passed": 12,
+     "failed": 0
+    },
+    "E4": {
+     "passed": 12,
+     "failed": 0
+    },
+    "L1a": {
+     "passed": 8,
+     "failed": 0
+    },
+    "L1b": {
+     "passed": 8,
+     "failed": 0
+    },
+    "L1c": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V1": {
+     "passed": 12,
+     "failed": 0
+    },
+    "V2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V3": {
+     "passed": 12,
+     "failed": 0
+    },
+    "V4": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W1": {
+     "passed": 12,
+     "failed": 0
+    },
+    "W2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W3": {
+     "passed": 11,
+     "failed": 0
+    },
+    "W4": {
+     "passed": 8,
+     "failed": 0
+    }
+   },
+   "templates_using_u_explosion": [
+    "A1",
+    "A3",
+    "A4",
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "L1a",
+    "V1",
+    "V3",
+    "V4",
+    "W1",
+    "W2",
+    "W3",
+    "W4"
+   ],
+   "templates_without_closure": [
+    "A2",
+    "L1b",
+    "L1c",
+    "V2"
+   ],
+   "templates_needing_theme_recursion": [],
+   "failures": []
+  },
+  "cypher_x": {
+   "explodes_vs_u_explosion": {
+    "kuzu_rows": 277755,
+    "sql_rows": 277415,
+    "compared_rows": 275793,
+    "equal": true,
+    "only_kuzu": 0,
+    "only_sql": 0,
+    "excluded_note": "rows of the 7 duplicated sku_code values and the 7 bundles containing them (Graph-U is id-keyed, SQL-U code-keyed)"
+   },
+   "cypher_questions": {
+    "n": 48,
+    "passed": 48,
+    "failed": 0,
+    "templates": [
+     "E1",
+     "E3",
+     "V1",
+     "W1"
+    ],
+    "failures": []
+   }
+  }
+ },
+ "aw": {
+  "structure": {
+   "overlapping_pairs": 0,
+   "empty_or_nonpositive": 0,
+   "unmerged_adjacent": 0,
+   "ok": true
+  },
+  "triples": {
+   "n": 200,
+   "passed": 200,
+   "failed": 0,
+   "zero_expected": 54,
+   "failures": []
+  },
+  "questions": {
+   "n": 188,
+   "passed": 188,
+   "failed": 0,
+   "per_class": {
+    "A": {
+     "passed": 46,
+     "failed": 0
+    },
+    "E": {
+     "passed": 40,
+     "failed": 0
+    },
+    "L": {
+     "passed": 21,
+     "failed": 0
+    },
+    "V": {
+     "passed": 44,
+     "failed": 0
+    },
+    "W": {
+     "passed": 37,
+     "failed": 0
+    }
+   },
+   "per_template": {
+    "A1": {
+     "passed": 8,
+     "failed": 0
+    },
+    "A2": {
+     "passed": 9,
+     "failed": 0
+    },
+    "A3": {
+     "passed": 10,
+     "failed": 0
+    },
+    "A4": {
+     "passed": 7,
+     "failed": 0
+    },
+    "A5": {
+     "passed": 8,
+     "failed": 0
+    },
+    "A6x": {
+     "passed": 4,
+     "failed": 0
+    },
+    "E1": {
+     "passed": 12,
+     "failed": 0
+    },
+    "E2": {
+     "passed": 10,
+     "failed": 0
+    },
+    "E3": {
+     "passed": 10,
+     "failed": 0
+    },
+    "E4": {
+     "passed": 8,
+     "failed": 0
+    },
+    "L1": {
+     "passed": 4,
+     "failed": 0
+    },
+    "L2": {
+     "passed": 4,
+     "failed": 0
+    },
+    "L3": {
+     "passed": 5,
+     "failed": 0
+    },
+    "L4": {
+     "passed": 4,
+     "failed": 0
+    },
+    "L5": {
+     "passed": 4,
+     "failed": 0
+    },
+    "V1": {
+     "passed": 10,
+     "failed": 0
+    },
+    "V2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V3": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V4": {
+     "passed": 6,
+     "failed": 0
+    },
+    "V5": {
+     "passed": 4,
+     "failed": 0
+    },
+    "V6x": {
+     "passed": 4,
+     "failed": 0
+    },
+    "V7x": {
+     "passed": 4,
+     "failed": 0
+    },
+    "W1": {
+     "passed": 10,
+     "failed": 0
+    },
+    "W2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W3": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W4": {
+     "passed": 7,
+     "failed": 0
+    },
+    "W5x": {
+     "passed": 4,
+     "failed": 0
+    }
+   },
+   "templates_using_u_explosion": [
+    "A3",
+    "A5",
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "V1",
+    "V3",
+    "V4",
+    "V5",
+    "V7x",
+    "W1",
+    "W2",
+    "W3",
+    "W4",
+    "W5x"
+   ],
+   "templates_without_closure": [
+    "A1",
+    "A2",
+    "A4",
+    "A6x",
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "V2",
+    "V6x"
+   ],
+   "templates_needing_theme_recursion": [],
+   "failures": []
+  },
+  "cypher_x": {
+   "explodes_vs_u_explosion": {
+    "kuzu_rows": 11509,
+    "sql_rows": 11509,
+    "equal": true
+   },
+   "cypher_questions": {
+    "n": 44,
+    "passed": 44,
+    "failed": 0,
+    "templates": [
+     "E1",
+     "E3",
+     "V1",
+     "V5",
+     "W3"
+    ],
+    "failures": []
+   }
+  }
+ },
+ "lego": {
+  "structure": {
+   "duplicate_keys": 0,
+   "roots_with_wrong_is_current": 0,
+   "nonpositive_qty": 0,
+   "ok": true
+  },
+  "triples": {
+   "n": 200,
+   "passed": 200,
+   "failed": 0,
+   "zero_expected": 42,
+   "failures": []
+  },
+  "questions": {
+   "n": 190,
+   "passed": 190,
+   "failed": 0,
+   "per_class": {
+    "A": {
+     "passed": 46,
+     "failed": 0
+    },
+    "E": {
+     "passed": 54,
+     "failed": 0
+    },
+    "L": {
+     "passed": 12,
+     "failed": 0
+    },
+    "V": {
+     "passed": 38,
+     "failed": 0
+    },
+    "W": {
+     "passed": 40,
+     "failed": 0
+    }
+   },
+   "per_template": {
+    "A1": {
+     "passed": 8,
+     "failed": 0
+    },
+    "A2": {
+     "passed": 7,
+     "failed": 0
+    },
+    "A3": {
+     "passed": 7,
+     "failed": 0
+    },
+    "A4": {
+     "passed": 6,
+     "failed": 0
+    },
+    "A5": {
+     "passed": 7,
+     "failed": 0
+    },
+    "A6": {
+     "passed": 7,
+     "failed": 0
+    },
+    "E1": {
+     "passed": 8,
+     "failed": 0
+    },
+    "E2": {
+     "passed": 7,
+     "failed": 0
+    },
+    "E3": {
+     "passed": 7,
+     "failed": 0
+    },
+    "E4": {
+     "passed": 6,
+     "failed": 0
+    },
+    "E5": {
+     "passed": 6,
+     "failed": 0
+    },
+    "E6": {
+     "passed": 6,
+     "failed": 0
+    },
+    "E7": {
+     "passed": 5,
+     "failed": 0
+    },
+    "E8": {
+     "passed": 5,
+     "failed": 0
+    },
+    "L1": {
+     "passed": 3,
+     "failed": 0
+    },
+    "L2": {
+     "passed": 3,
+     "failed": 0
+    },
+    "L3": {
+     "passed": 3,
+     "failed": 0
+    },
+    "L4": {
+     "passed": 3,
+     "failed": 0
+    },
+    "V1": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "V3": {
+     "passed": 7,
+     "failed": 0
+    },
+    "V4": {
+     "passed": 6,
+     "failed": 0
+    },
+    "V5": {
+     "passed": 5,
+     "failed": 0
+    },
+    "W1": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W2": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W3": {
+     "passed": 8,
+     "failed": 0
+    },
+    "W4": {
+     "passed": 6,
+     "failed": 0
+    },
+    "W5": {
+     "passed": 6,
+     "failed": 0
+    },
+    "X1": {
+     "passed": 4,
+     "failed": 0
+    },
+    "X2": {
+     "passed": 4,
+     "failed": 0
+    },
+    "X3": {
+     "passed": 4,
+     "failed": 0
+    },
+    "X4": {
+     "passed": 4,
+     "failed": 0
+    }
+   },
+   "templates_using_u_explosion": [
+    "A2",
+    "A3",
+    "A5",
+    "A6",
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "E8",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "W1",
+    "W2",
+    "W3",
+    "W4",
+    "W5",
+    "X1",
+    "X2",
+    "X3",
+    "X4"
+   ],
+   "templates_without_closure": [
+    "A1",
+    "A4",
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "templates_needing_theme_recursion": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A6",
+    "X2"
+   ],
+   "failures": []
+  },
+  "cypher_x": {
+   "explodes_vs_u_explosion": {
+    "kuzu_rows": 1423217,
+    "sql_rows": 1423217,
+    "equal": true
+   },
+   "cypher_questions": {
+    "n": 34,
+    "passed": 34,
+    "failed": 0,
+    "templates": [
+     "E3",
+     "E6",
+     "V2",
+     "V5",
+     "W3"
+    ],
+    "failures": []
+   }
+  }
+ }
+}

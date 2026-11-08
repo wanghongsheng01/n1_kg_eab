@@ -1,0 +1,32 @@
+{
+ "aw": {
+  "build_s": 3.9,
+  "db": "data/mf_aw.duckdb",
+  "file_bytes": 9973760,
+  "n_metrics": 10,
+  "spec_chars": 9810
+ },
+ "lego": {
+  "build_s": 4.3,
+  "db": "data/mf_lego.duckdb",
+  "file_bytes": 66859008,
+  "n_metrics": 14,
+  "spec_chars": 13036
+ },
+ "versions": {
+  "dbt-core": "1.10.23",
+  "dbt-duckdb": "1.10.0",
+  "dbt-metricflow": "0.11.0",
+  "dbt-semantic-interfaces": "0.9.4.dev0",
+  "duckdb": "1.4.5",
+  "metricflow": "0.209.0",
+  "python": "3.9.6"
+ },
+ "xb": {
+  "build_s": 6.8,
+  "db": "data/mf_xb.duckdb",
+  "file_bytes": 42479616,
+  "n_metrics": 13,
+  "spec_chars": 9763
+ }
+}

@@ -23,6 +23,12 @@ DATA = os.path.join(os.path.dirname(CODE), "data")
 W = World(os.path.join(DATA, "lego.duckdb"))
 rng = random.Random(20261105)
 Q, used = [], set()
+
+# Fresh replication set (N1_FRESH=1, review round): a new seed, instances of the main set excluded, qids prefixed F.
+FRESH = os.environ.get("N1_FRESH") == "1"
+if FRESH:
+    rng = random.Random(20261108)
+    used |= {(q["tpl"], q["text"]) for q in map(json.loads, open(os.path.join(DATA, "lego_questions.jsonl")))}
 YEARS = list(range(2012, 2026))
 
 
@@ -48,6 +54,8 @@ def pick(n, gen, tries=20000):
             return
         if gen():
             k += 1
+    if FRESH:  # the main set already used most instances of a small template: keep the rest
+        print("fresh: short template", getattr(gen, "__name__", "?"), k, "of", n, flush=True); return
     raise RuntimeError(f"could not draw enough instances for {gen.__name__}")
 
 
@@ -380,7 +388,7 @@ def V3():
 def V4():
     s = rng.choice(MULTI)
     a, b = sum(W.minifigs(s, 1).values()), sum(FIGS[s].values())
-    if a == b:
+    if a == b or (FRESH and a == 0):  # the main set has no empty version-1 inventory (an empty sum is NULL in the layer)
         return False
     return add("V", "V4", f"How many minifigs in total (sum of quantities, including minifigs inside nested sets) did version 1 of the inventory of LEGO set {s} contain?",
                "scalar", a, {"set_num": s, "version": 1})
@@ -452,7 +460,10 @@ def X4():
 for f in (X1, X2, X3, X4):
     pick(4, f)
 
-with open(os.path.join(DATA, "lego_questions.jsonl"), "w") as fh:
+if FRESH:
+    for q in Q:
+        q["qid"] = "F" + q["qid"]
+with open(os.path.join(DATA, "lego_questions_fresh.jsonl" if FRESH else "lego_questions.jsonl"), "w") as fh:
     for q in Q:
         fh.write(json.dumps(q) + "\n")
 print(len(Q), {c: sum(q["cls"] == c for q in Q) for c in "LEWAV"}, "out of S3 coverage:", sum(not q["s3_covered"] for q in Q))

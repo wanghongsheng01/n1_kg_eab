@@ -1,0 +1,90 @@
+metrics:
+- name: bom_quantity
+  description: Total quantity of each component needed for ONE unit of a product (company model, non-bundle SKU or bundle
+    SKU), exploded through all levels. Select the product with an Entity('product') filter and the BOM state with explosion__is_current
+    or the validity interval.
+  type: simple
+  label: bom_quantity
+  type_params:
+    measure: explosion_qty
+- name: bom_direct_quantity
+  description: Quantity of each DIRECT (first-level) child of a product per one unit (the max_depth = 1 case of bom_quantity).
+  type: simple
+  label: bom_direct_quantity
+  type_params:
+    measure: composition_qty
+- name: bom_component_count
+  description: Number of distinct components in the all-level explosion of a product (combine with the filters of bom_quantity).
+  type: simple
+  label: bom_component_count
+  type_params:
+    measure: explosion_items
+- name: bom_cost
+  description: Sum over PARTS (non-assembly components) at any level of (quantity per unit x unit_cost) for ONE unit of a
+    product.
+  type: simple
+  label: bom_cost
+  type_params:
+    measure: explosion_cost
+  filter: '{{ Dimension(''component__is_assembly'') }} = false'
+- name: where_used
+  description: Quantity of a component per one unit of each product that contains it at any depth (filter the component with
+    an Entity('component') filter, group by product).
+  type: simple
+  label: where_used
+  type_params:
+    measure: explosion_qty
+- name: where_used_count
+  description: Number of distinct products that contain a component at any depth (combine with the filters of where_used).
+  type: simple
+  label: where_used_count
+  type_params:
+    measure: explosion_roots
+- name: units_sold
+  description: Units sold in completed orders at SKU level (bundle SKUs count as themselves).
+  type: simple
+  label: units_sold
+  type_params:
+    measure: sku_units
+  filter: '{{ Dimension(''order_line__status'') }} = ''completed'''
+- name: units_sold_model
+  description: 'Units sold in completed orders converted to company-model units: SKU units x model qty of the SKU-model mapping;
+    bundles are expanded into their item SKUs first (the level = ''model'' case of units_sold).'
+  type: simple
+  label: units_sold_model
+  type_params:
+    measure: model_units
+  filter: '{{ Dimension(''model_sale__status'') }} = ''completed'''
+- name: revenue
+  description: Sum of order-line qty x unit_price over completed orders.
+  type: simple
+  label: revenue
+  type_params:
+    measure: line_revenue
+  filter: '{{ Dimension(''order_line__status'') }} = ''completed'''
+- name: part_consumption
+  description: 'Units of PARTS consumed by completed orders: every order line exploded (bundle -> SKUs -> models -> components)
+    with the BOM valid on the ORDER DATE.'
+  type: simple
+  label: part_consumption
+  type_params:
+    measure: consumed_units
+  filter: '{{ Dimension(''consumption__status'') }} = ''completed'' AND {{ Dimension(''component__is_assembly'') }} = false'
+- name: listing_count
+  description: Number of store listings.
+  type: simple
+  label: listing_count
+  type_params:
+    measure: listings
+- name: sku_model_map
+  description: The SKU to company model mapping (non-bundle SKUs); value = model units per SKU unit.
+  type: simple
+  label: sku_model_map
+  type_params:
+    measure: sku_model_qty
+- name: component_attr
+  description: Number of components (one per component; group by component attributes).
+  type: simple
+  label: component_attr
+  type_params:
+    measure: component_count

@@ -1,0 +1,13 @@
+mf_lego:
+  target: '{{ env_var(''MF_TARGET'', ''build'') }}'
+  outputs:
+    build:
+      type: duckdb
+      path: ./data/mf_lego.duckdb
+      schema: mf
+      threads: 1
+    compile:
+      type: duckdb
+      path: ':memory:'
+      schema: mf
+      threads: 1

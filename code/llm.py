@@ -15,12 +15,19 @@ LOG = os.path.join(CACHE_DIR, "usage.log")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 MODELS = {"ds-flash": ("deepseek", "deepseek-flash"), "ds-pro": ("deepseek", "deepseek-v4-pro"),
-          "glm-flash": ("glm", "glm-4.5-flash"), "glm-air": ("glm2", "glm-4.5-air"), "kimi-k2.6": ("kimi", "kimi-k2.6")}
+          "glm-flash": ("glm", "glm-4.5-flash"), "glm-air": ("glm2", "glm-4.5-air"), "kimi-k2.6": ("kimi", "kimi-k2.6"),
+          "gpt-6-sol": ("llmhub", "gpt-6-sol"), "claude-opus-5.5": ("llmhub", "claude-opus-5-5"),
+          "qwen3.8-27b": ("llmhub", "Qwen3.8-27B"),
+          "ds-flash-think": ("deepseek", "deepseek-flash")}  # review round: DS-Flash with thinking enabled
 OFF = {"thinking": {"type": "disabled"}}
-FIXED = {"ds-flash": OFF, "ds-pro": OFF, "glm-flash": OFF, "glm-air": OFF, "kimi-k2.6": {**OFF, "temperature": 0.6}}
+FIXED = {"ds-flash": OFF, "ds-pro": OFF, "glm-flash": OFF, "glm-air": OFF, "kimi-k2.6": {**OFF, "temperature": 0.6},
+         "claude-opus-5.5": {"temperature": None}, "ds-flash-think": {"thinking": {"type": "enabled"}}}  # the gateway's Claude endpoint rejects the temperature parameter
 # USD per 1M tokens (input, output); list prices used by the sibling sessions on 2026-11-03
 PRICES = {"glm-flash": (0.0, 0.0), "glm-air": (0.20, 1.10), "ds-flash": (0.30, 1.20), "ds-pro": (1.32, 3.96),
-          "kimi-k2.6": (0.95, 4.00)}
+          "kimi-k2.6": (0.95, 4.00), "gpt-6-sol": (0.0, 0.0), "claude-opus-5.5": (0.0, 0.0),
+          "qwen3.8-27b": (0.0, 0.0), "ds-flash-think": (0.30, 1.20)}
+# gpt-6-sol and claude-opus-5.5 are served through the organisation's OpenAI-compatible gateway (no list price recorded;
+# tokens are reported instead); its endpoint and key come only from LLMHUB_BASE_URL / LLMHUB_API_KEY, never from disk
 DAILY_CAP = float(os.environ.get("DAILY_CAP", 6.0))   # this session's share
 SHARED_CAP = float(os.environ.get("SHARED_CAP", 20.0))  # per model per day, shared by all sessions
 CAP_MARGIN = float(os.environ.get("CAP_MARGIN", 1.0))   # head-room for requests already in flight
@@ -60,9 +67,13 @@ if os.path.exists(LOG):
 def chat(model, messages, temperature=0.0, max_tokens=1500, rep=0, retries=8):
     """Returns dict(text, usage, usd, latency, status, cached)."""
     prov, name = MODELS[model]
+    # truncation retry (retry_truncated.py): raises the output cap of every call in the re-run
+    max_tokens = max(max_tokens, int(os.environ.get("N1_MIN_MAX_TOKENS", 0)))
     kw = {k: v for k, v in FIXED.get(model, {}).items() if k != "temperature"}
     temperature = FIXED.get(model, {}).get("temperature", temperature)
     body = {"model": name, "messages": messages, "temperature": temperature, "max_tokens": max_tokens, **kw}
+    if temperature is None:
+        del body["temperature"]
     key = hashlib.sha256(json.dumps([prov, body, rep], sort_keys=True).encode()).hexdigest()
     path = os.path.join(CACHE_DIR, key[:2], key + ".json")
     if os.path.exists(path):
@@ -70,12 +81,15 @@ def chat(model, messages, temperature=0.0, max_tokens=1500, rep=0, retries=8):
     if (_spent.get(model, 0) > DAILY_CAP - CAP_MARGIN
             or _spent.get(model, 0) + _others.get(model, 0) > SHARED_CAP - CAP_MARGIN):
         raise RuntimeError(f"daily cap reached for {model}")
-    cfg, err = KEYS[prov], None
+    if prov == "llmhub":
+        cfg, err = {"base_url": os.environ["LLMHUB_BASE_URL"], "api_key": os.environ["LLMHUB_API_KEY"]}, None
+    else:
+        cfg, err = KEYS[prov], None
     for i in range(retries):
         try:
             t0 = time.time()
             r = requests.post(cfg["base_url"].rstrip("/") + "/chat/completions",
-                              headers={"Authorization": "Bearer " + cfg["api_key"]}, json=body, timeout=180)
+                              headers={"Authorization": "Bearer " + cfg["api_key"]}, json=body, timeout=float(os.environ.get("N1_HTTP_TIMEOUT", 180)))
             lat = time.time() - t0
             if r.status_code == 200:
                 d = r.json()

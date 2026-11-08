@@ -1,0 +1,81 @@
+SEMANTIC LAYER `aw` (AdventureWorks; a dbt MetricFlow semantic layer: governed metrics; you query it with a MetricFlow query, not SQL)
+
+Business definitions baked into every metric:
+- Composition: an assembly product has a bill of materials (BOM) of component products x quantity; a component that is
+  itself manufactured (make_flag = true) has its own BOM, recursively. A "part" is a purchased product (make_flag = false).
+  Quantity per unit multiplies along a path and sums over all paths. The BOM metrics are defined over the materialised
+  all-level explosion (one row per product x contained component x validity interval).
+- BOM validity: a BOM line is valid on date d if valid_from <= d and (valid_to is null or d <= valid_to). "Current" means
+  as of 2025-06-30. Every BOM metric query must select ONE BOM state, either the current BOM:
+  {{ Dimension('explosion__is_current') }} = true   (composition__is_current for bom_direct_quantity)
+  or the BOM valid on a date d:
+  {{ TimeDimension('explosion__valid_from', 'day') }} <= 'd' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= 'd')
+- Products are identified by product_number (e.g. 'BK-R93R-44'), the value of the entities product and component.
+  Revenue is the sum of order-line line_total (after discount; order total_due also contains tax and freight and is never used).
+- Component demand of orders: every order line requires its own product (units sold directly) plus every component at
+  any level of that product's BOM valid on the ORDER DATE (units contained), times the ordered quantity.
+- sales_line__online / demand__online is true for online (individual customer) orders and false for reseller orders.
+
+Query format: ONE JSON object holding the arguments of `mf query`:
+{"metrics": [<metric name>, ...], "group_by": [<group-by item>, ...], "where": [<filter>, ...],
+ "order_by": [<metric or group-by item>, or "-<...>" for descending], "limit": <int>}
+- A group-by item is an entity name (e.g. "component"; the result column holds its code) or a dimension
+  "<entity>__<dimension>" (e.g. "component__category"). Time dimensions take a grain suffix: "metric_time__year", "metric_time__quarter",
+  "metric_time__month", "metric_time__day" (or "<entity>__<time dimension>__<grain>"); the group-by item
+  "TimeDimension('metric_time', date_part_name='year')" (also 'quarter', 'month') gives the integer year / quarter / month.
+- Each where filter is a SQL boolean expression over templated references; all filters are ANDed:
+  {{ Dimension('<entity>__<dimension>') }} = 'value', {{ Entity('<entity>') }} = 'code',
+  {{ TimeDimension('metric_time', 'day') }} >= '2024-01-01', {{ TimeDimension('metric_time', 'year') }} = '2024-01-01'
+  (a grain truncates the date: year -> Jan 1, quarter -> first day of the quarter), and
+  {{ TimeDimension('metric_time', date_part_name='year') }} = 2024 (also 'quarter', 'month').
+  A filter may use any dimension or entity listed for the metric, also ones not in group_by.
+- The result has one column per group-by item plus one column per metric (named like the metric).
+- MetricFlow has no query parameters and no defaults: the product / component / set / item a metric is about is selected
+  with an Entity filter, and every other choice (BOM state, version, kind, ...) with a dimension filter.
+
+Metrics:
+1. bom_quantity -- Total quantity of each component needed for ONE unit of a product, exploded through all BOM levels. Select the product with an Entity('product') filter and the BOM state with explosion__is_current or the validity interval.
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, explosion__is_current, explosion__valid_from, explosion__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+2. bom_direct_quantity -- Quantity of each DIRECT (first-level) BOM line of a product per unit (the max_depth = 1 case of bom_quantity).
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, composition__is_current, composition__valid_from, composition__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+3. bom_component_count -- Number of distinct components in the all-level explosion of a product (combine with the filters of bom_quantity).
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, explosion__is_current, explosion__valid_from, explosion__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+4. purchased_cost -- Sum over PARTS (make_flag = false) at any level of (quantity per unit x standard_cost) for ONE unit of a product.
+   always applied (metric filter): {{ Dimension('component__make_flag') }} = false
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, explosion__is_current, explosion__valid_from, explosion__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+5. where_used -- Quantity of a component per one unit of each product that contains it at any BOM level (every assembly product is considered, including intermediate sub-assemblies; filter product__category = 'Bikes' for bikes only).
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, explosion__is_current, explosion__valid_from, explosion__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+6. where_used_count -- Number of distinct products that contain a component at any level (combine with the filters of where_used).
+   entities: component, product
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, explosion__is_current, explosion__valid_from, explosion__valid_to, product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+7. units_sold -- Sum of order-line quantities.
+   entities: product, sales_line, territory
+   dimensions: product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, sales_line__online, sales_line__order_date, territory__country, territory__group, territory__name, metric_time
+8. revenue -- Sum of order-line line_total (after discount; excludes tax and freight).
+   entities: product, sales_line, territory
+   dimensions: product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, sales_line__online, sales_line__order_date, territory__country, territory__group, territory__name, metric_time
+9. component_demand -- Units of each product required by order lines: units sold directly plus units contained at any level of the sold products, using the BOM valid on each order date.
+   entities: component, territory
+   dimensions: component__category, component__is_finished_good, component__make_flag, component__name, component__standard_cost, component__subcategory, demand__online, demand__order_date, territory__country, territory__group, territory__name, metric_time
+10. product_attr -- Number of products (one row per product; group by product attributes).
+   entities: product
+   dimensions: product__category, product__color, product__is_finished_good, product__list_price, product__make_flag, product__name, product__product_line, product__standard_cost, product__subcategory, metric_time
+
+Dimension notes:
+- component__make_flag: true = manufactured sub-assembly, false = purchased part
+- composition__is_current: true if the row is valid on 2025-06-30 (the current BOM)
+- composition__valid_from: first day of the validity interval (time dimension)
+- composition__valid_to: last day of the validity interval (NULL = open-ended) (time dimension)
+- demand__order_date:  (time dimension)
+- explosion__is_current: true if the row is valid on 2025-06-30 (the current BOM)
+- explosion__valid_from: first day of the validity interval (time dimension)
+- explosion__valid_to: last day of the validity interval (NULL = open-ended) (time dimension)
+- product__make_flag: true = manufactured, false = purchased part
+- sales_line__online: true = online (individual) order, false = reseller
+- sales_line__order_date:  (time dimension)
+- metric_time: the order date for units_sold, revenue and component_demand; not meaningful for BOM and product metrics.

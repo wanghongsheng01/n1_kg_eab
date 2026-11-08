@@ -14,13 +14,20 @@ import json, os, random, sys, datetime as dt
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from __init__ import SQL_DB, QUESTIONS  # noqa: E402
+from __init__ import SQL_DB, QUESTIONS, MAIN_QUESTIONS  # noqa: E402
 from gold import World, TODAY  # noqa: E402
 
 W = World(SQL_DB)
 rng = random.Random(20261105)
+
+# Fresh replication set (N1_FRESH=1, review round): a new seed, instances of the main set excluded, qids prefixed F.
+FRESH = os.environ.get("N1_FRESH") == "1"
+if FRESH:
+    rng = random.Random(20261108)
 Q = []
 used = set()
+if FRESH:
+    used |= {(q["tpl"], json.dumps(q["args"], sort_keys=True, default=str)) for q in map(json.loads, open(MAIN_QUESTIONS))}
 EXAMPLE = "BK-R93R-44"   # used as the example code in the substrate docs; never asked about
 
 
@@ -46,6 +53,8 @@ def pick(n, gen):
             return
         if gen():
             k += 1
+    if FRESH:  # the main set already used most instances of a small template: keep the rest
+        print("fresh: short template", getattr(gen, "__name__", "?"), k, "of", n, flush=True); return
     raise RuntimeError(f"could not draw enough instances for {gen.__name__}")
 
 
@@ -435,6 +444,9 @@ for q in Q:
         q["gold"] = float(q["gold"])
 order = {c: i for i, c in enumerate("LEWAV")}
 Q.sort(key=lambda q: (order[q["cls"]], q["qid"]))
+if FRESH:
+    for q in Q:
+        q["qid"] = "F" + q["qid"]
 with open(QUESTIONS, "w") as f:
     for q in Q:
         f.write(json.dumps(q) + "\n")

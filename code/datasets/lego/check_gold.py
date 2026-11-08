@@ -168,7 +168,7 @@ def run_cypher(k, qs, tpl):
 
 
 if __name__ == "__main__":
-    qs = [json.loads(l) for l in open(os.path.join(DATA, "lego_questions.jsonl"))]
+    qs = [json.loads(l) for l in open(os.path.join(DATA, "lego_questions_fresh.jsonl" if os.environ.get("N1_FRESH") == "1" else "lego_questions.jsonl"))]
     con = duckdb.connect(os.path.join(DATA, "lego.duckdb"), read_only=True)
     ok = cov = 0
     out, bad = {}, []
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         if not m:
             bad.append(q["qid"])
             print("MISMATCH S3", q["qid"], q["tpl"], q["gold"], rows[:5])
-    json.dump(out, open(os.path.join(DATA, "lego_s3_coverage.json"), "w"), indent=0)
+    json.dump(out, open(os.path.join(DATA, "lego_s3_coverage_fresh.json" if os.environ.get("N1_FRESH") == "1" else "lego_s3_coverage.json"), "w"), indent=0)
     print(f"S3 oracle agrees with gold on {ok}/{cov} covered questions; coverage {cov}/{len(qs)} "
           f"({100.0 * cov / len(qs):.1f}%); out of coverage {len(qs) - cov}")
 

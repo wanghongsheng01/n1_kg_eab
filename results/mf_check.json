@@ -1,0 +1,1043 @@
+{
+ "aw:aw_questions.jsonl": {
+  "questions": 188,
+  "self_built_covered": 172,
+  "mf_expressed": 172,
+  "passed": 172,
+  "failures": [],
+  "by_template": {
+   "A1": "8/8",
+   "A2": "9/9",
+   "A3": "10/10",
+   "A4": "7/7",
+   "A5": "8/8",
+   "E1": "12/12",
+   "E2": "10/10",
+   "E3": "10/10",
+   "E4": "8/8",
+   "L1": "4/4",
+   "L2": "4/4",
+   "L3": "5/5",
+   "L4": "4/4",
+   "L5": "4/4",
+   "V1": "10/10",
+   "V2": "8/8",
+   "V3": "8/8",
+   "V4": "6/6",
+   "V5": "4/4",
+   "W1": "10/10",
+   "W2": "8/8",
+   "W3": "8/8",
+   "W4": "7/7"
+  },
+  "uncovered_templates": [
+   "A6x",
+   "V6x",
+   "V7x",
+   "W5x"
+  ],
+  "compile_s_total": 3.66,
+  "exec_s_total": 0.31,
+  "reference_query_per_template": {
+   "L1": {
+    "metrics": [
+     "product_attr"
+    ],
+    "group_by": [
+     "product__standard_cost"
+    ],
+    "where": [
+     "{{ Dimension('product__name') }} = 'Road-650 Red, 44'"
+    ]
+   },
+   "L2": {
+    "metrics": [
+     "product_attr"
+    ],
+    "group_by": [
+     "product__subcategory"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BK-R89R-52'"
+    ]
+   },
+   "L3": {
+    "metrics": [
+     "bom_direct_quantity"
+    ],
+    "group_by": [
+     "component"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'HS-0296'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "L4": {
+    "metrics": [
+     "bom_direct_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BK-R68R-48'",
+     "{{ Entity('component') }} = 'BB-8107'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "L5": {
+    "metrics": [
+     "product_attr"
+    ],
+    "where": [
+     "{{ Dimension('product__subcategory') }} = 'Road Frames'",
+     "{{ Dimension('product__list_price') }} > 594.0"
+    ]
+   },
+   "E1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'FR-M63S-38'",
+     "{{ Entity('component') }} = 'MS-2341'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E2": {
+    "metrics": [
+     "bom_component_count"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'FR-T98Y-46'",
+     "{{ Dimension('component__make_flag') }} = false",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E3": {
+    "metrics": [
+     "purchased_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BK-R64Y-42'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E4": {
+    "metrics": [
+     "bom_component_count"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'FR-R92R-62'",
+     "{{ Dimension('component__make_flag') }} = true",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W1": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'NI-9522'",
+     "{{ Dimension('product__category') }} = 'Bikes'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W2": {
+    "metrics": [
+     "where_used"
+    ],
+    "group_by": [
+     "product"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'SE-R908'",
+     "{{ Dimension('product__category') }} = 'Bikes'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W3": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'TO-2301'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W4": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'SL-0931'",
+     "{{ Dimension('product__subcategory') }} = 'Mountain Bikes'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "A1": {
+    "metrics": [
+     "units_sold"
+    ],
+    "where": [
+     "{{ Dimension('product__subcategory') }} = 'Cleaners'",
+     "{{ Dimension('territory__name') }} = 'Germany'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025",
+     "{{ Dimension('sales_line__online') }} = false"
+    ]
+   },
+   "A2": {
+    "metrics": [
+     "revenue"
+    ],
+    "where": [
+     "{{ Dimension('territory__name') }} = 'Australia'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025",
+     "{{ TimeDimension('metric_time', date_part_name='quarter') }} = 1"
+    ]
+   },
+   "A3": {
+    "metrics": [
+     "component_demand"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'MS-2348'",
+     "{{ Dimension('territory__name') }} = 'Central'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025"
+    ]
+   },
+   "A4": {
+    "metrics": [
+     "units_sold"
+    ],
+    "group_by": [
+     "product"
+    ],
+    "where": [
+     "{{ Dimension('product__category') }} = 'Bikes'",
+     "{{ Dimension('territory__name') }} = 'Northwest'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2024"
+    ],
+    "order_by": [
+     "-units_sold"
+    ],
+    "limit": 3
+   },
+   "A5": {
+    "metrics": [
+     "component_demand"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'FD-2342'",
+     "{{ Dimension('territory__name') }} = 'Germany'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025"
+    ]
+   },
+   "V1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'RW-M762'",
+     "{{ Entity('component') }} = 'SD-9872'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2021-09-05' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2021-09-05')"
+    ]
+   },
+   "V2": {
+    "metrics": [
+     "bom_direct_quantity"
+    ],
+    "group_by": [
+     "component"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BE-2349'",
+     "{{ TimeDimension('composition__valid_from', 'day') }} <= '2021-06-22' AND ({{ TimeDimension('composition__valid_to', 'day') }} IS NULL OR {{ TimeDimension('composition__valid_to', 'day') }} >= '2021-06-22')"
+    ]
+   },
+   "V3": {
+    "metrics": [
+     "bom_component_count"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'FR-R38R-58'",
+     "{{ Dimension('component__make_flag') }} = false",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2021-06-18' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2021-06-18')"
+    ]
+   },
+   "V4": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'TT-M928'",
+     "{{ Dimension('product__category') }} = 'Bikes'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2021-07-02' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2021-07-02')"
+    ]
+   },
+   "V5": {
+    "metrics": [
+     "purchased_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BK-T79Y-54'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2021-07-07' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2021-07-07')"
+    ]
+   }
+  }
+ },
+ "_meta": {
+  "note": "reference MetricFlow queries built from template parameters; compiled by MetricFlow (mf_layer.compile_mf) and executed on data/mf_<ds>.duckdb; scored with score.match",
+  "date": "2026-11-07 13:32",
+  "randomized_crosscheck_vs_self_built": {
+   "xb": "228/236 query pairs agree (bom_quantity, bom_direct_quantity incl. SKUs, bom_cost at 4 dates; where_used model/sku/bundle; units_sold, revenue per month). The 8 disagreements are units_sold_model and part_consumption per year: the 7 duplicated sku_code values are merged in u_composition/u_explosion (code-keyed), so listings of those SKU records are mapped to the union of both records' models (8 models affected); no gold question is affected.",
+   "aw": "232/232",
+   "lego": "262/262",
+   "script": "scratch script (not part of the artifact); queries the self-built compile_query on <ds>.duckdb and MetricFlow on mf_<ds>.duckdb with random parameters"
+  }
+ },
+ "xb:xb_questions.jsonl": {
+  "questions": 199,
+  "self_built_covered": 183,
+  "mf_expressed": 183,
+  "passed": 183,
+  "failures": [],
+  "by_template": {
+   "A1": "12/12",
+   "A2": "12/12",
+   "A3": "12/12",
+   "A4": "12/12",
+   "E1": "12/12",
+   "E2": "12/12",
+   "E3": "12/12",
+   "E4": "12/12",
+   "L1a": "8/8",
+   "L1b": "8/8",
+   "L1c": "8/8",
+   "V1": "12/12",
+   "V3": "12/12",
+   "V4": "8/8",
+   "W1": "12/12",
+   "W2": "8/8",
+   "W3": "11/11"
+  },
+  "uncovered_templates": [
+   "V2",
+   "W4"
+  ],
+  "compile_s_total": 3.07,
+  "exec_s_total": 0.41,
+  "reference_query_per_template": {
+   "L1a": {
+    "metrics": [
+     "sku_model_map"
+    ],
+    "group_by": [
+     "model"
+    ],
+    "where": [
+     "{{ Entity('sku') }} = 'TE3-160BLK35-JP-82'"
+    ]
+   },
+   "L1b": {
+    "metrics": [
+     "listing_count"
+    ],
+    "where": [
+     "{{ Entity('sku') }} = 'CO5-160OAK19-UKR-44'"
+    ]
+   },
+   "L1c": {
+    "metrics": [
+     "bom_direct_quantity"
+    ],
+    "group_by": [
+     "component"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'AL2-120BLK77-0174'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "E1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'SW9-180WAL93-0190'",
+     "{{ Entity('component') }} = 'FOO-192-WHT-02486'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E2": {
+    "metrics": [
+     "bom_component_count"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'TE1-180WAL41-0235'",
+     "{{ Dimension('component__is_assembly') }} = false",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E3": {
+    "metrics": [
+     "bom_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'ER6-120GRY30-0515'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E4": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BDL-UK-0265'",
+     "{{ Entity('component') }} = 'TAB-960-WAL-02843'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W1": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'MOT-367-WHT-00971'",
+     "{{ Dimension('explosion__root_kind') }} = 'model'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W2": {
+    "metrics": [
+     "where_used"
+    ],
+    "group_by": [
+     "product"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'FOO-380-WAL-01243'",
+     "{{ Dimension('explosion__root_kind') }} = 'model'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W3": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'FAS-535-GRY-01684'",
+     "{{ Dimension('explosion__root_kind') }} = 'sku'",
+     "{{ Dimension('product__is_bundle') }} = false",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "A1": {
+    "metrics": [
+     "units_sold_model"
+    ],
+    "where": [
+     "{{ Entity('model') }} = 'AE5-140WAL72-0654'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2023"
+    ]
+   },
+   "A2": {
+    "metrics": [
+     "revenue"
+    ],
+    "where": [
+     "{{ Dimension('store__platform') }} = 'Walmart'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025",
+     "{{ TimeDimension('metric_time', date_part_name='quarter') }} = 4"
+    ]
+   },
+   "A3": {
+    "metrics": [
+     "part_consumption"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'MOT-147-BLK-00200'",
+     "{{ Dimension('store__name') }} = 'Wayfair-US-05'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2023"
+    ]
+   },
+   "A4": {
+    "metrics": [
+     "units_sold_model"
+    ],
+    "group_by": [
+     "model"
+    ],
+    "where": [
+     "{{ Dimension('store__country') }} = 'US'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025"
+    ],
+    "order_by": [
+     "-units_sold_model"
+    ],
+    "limit": 3
+   },
+   "V1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'TE3-160WAL27-0415'",
+     "{{ Entity('component') }} = 'FAS-182-WHT-00726'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2024-05-19' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2024-05-19')"
+    ]
+   },
+   "V3": {
+    "metrics": [
+     "bom_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'NO3-160BLK32-0226'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2023-11-06' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2023-11-06')"
+    ]
+   },
+   "V4": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'SW5-160WAL30-0612'",
+     "{{ Dimension('component__is_assembly') }} = false",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2023-08-06' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2023-08-06')"
+    ]
+   }
+  }
+ },
+ "xb:questions.jsonl": {
+  "questions": 50,
+  "self_built_covered": 46,
+  "mf_expressed": 46,
+  "passed": 46,
+  "failures": [],
+  "by_template": {
+   "A1": "3/3",
+   "A2": "3/3",
+   "A3": "3/3",
+   "A4": "3/3",
+   "E1": "3/3",
+   "E2": "3/3",
+   "E3": "3/3",
+   "E4": "3/3",
+   "L1a": "2/2",
+   "L1b": "2/2",
+   "L1c": "2/2",
+   "V1": "3/3",
+   "V3": "3/3",
+   "V4": "2/2",
+   "W1": "3/3",
+   "W2": "2/2",
+   "W3": "3/3"
+  },
+  "uncovered_templates": [
+   "V2",
+   "W4"
+  ],
+  "compile_s_total": 0.39,
+  "exec_s_total": 0.08,
+  "reference_query_per_template": {
+   "L1a": {
+    "metrics": [
+     "sku_model_map"
+    ],
+    "group_by": [
+     "model"
+    ],
+    "where": [
+     "{{ Entity('sku') }} = 'TE2-160OAK05-CA-10'"
+    ]
+   },
+   "L1b": {
+    "metrics": [
+     "listing_count"
+    ],
+    "where": [
+     "{{ Entity('sku') }} = 'CO1-160GRY94-CAP-44'"
+    ]
+   },
+   "L1c": {
+    "metrics": [
+     "bom_direct_quantity"
+    ],
+    "group_by": [
+     "component"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'ER8-180WHT48-0630'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "E1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'TE1-120WAL55-0055'",
+     "{{ Entity('component') }} = 'TAB-496-BLK-02765'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E2": {
+    "metrics": [
+     "bom_component_count"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'AE1-160OAK40-0719'",
+     "{{ Dimension('component__is_assembly') }} = false",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E3": {
+    "metrics": [
+     "bom_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'TE1-160WAL85-0182'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E4": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'BDL-JP-0096'",
+     "{{ Entity('component') }} = 'FAS-477-BLK-01660'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W1": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'CON-150-WAL-01063'",
+     "{{ Dimension('explosion__root_kind') }} = 'model'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W2": {
+    "metrics": [
+     "where_used"
+    ],
+    "group_by": [
+     "product"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'ASM-376-03302'",
+     "{{ Dimension('explosion__root_kind') }} = 'model'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W3": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'GEA-767-OAK-00892'",
+     "{{ Dimension('explosion__root_kind') }} = 'sku'",
+     "{{ Dimension('product__is_bundle') }} = false",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "A1": {
+    "metrics": [
+     "units_sold_model"
+    ],
+    "where": [
+     "{{ Entity('model') }} = 'AE2-160GRY74-0268'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2025"
+    ]
+   },
+   "A2": {
+    "metrics": [
+     "revenue"
+    ],
+    "where": [
+     "{{ Dimension('store__platform') }} = 'Wayfair'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2024",
+     "{{ TimeDimension('metric_time', date_part_name='quarter') }} = 4"
+    ]
+   },
+   "A3": {
+    "metrics": [
+     "part_consumption"
+    ],
+    "where": [
+     "{{ Entity('component') }} = 'FOO-140-GRY-02859'",
+     "{{ Dimension('store__name') }} = 'Walmart-UK-22'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2024"
+    ]
+   },
+   "A4": {
+    "metrics": [
+     "units_sold_model"
+    ],
+    "group_by": [
+     "model"
+    ],
+    "where": [
+     "{{ Dimension('store__country') }} = 'CA'",
+     "{{ TimeDimension('metric_time', date_part_name='year') }} = 2024"
+    ],
+    "order_by": [
+     "-units_sold_model"
+    ],
+    "limit": 3
+   },
+   "V1": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'NO1-140WHT64-0646'",
+     "{{ Entity('component') }} = 'BRA-529-GRY-01579'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2024-12-19' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2024-12-19')"
+    ]
+   },
+   "V3": {
+    "metrics": [
+     "bom_cost"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'SW2-120GRY39-0330'",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2025-03-12' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2025-03-12')"
+    ]
+   },
+   "V4": {
+    "metrics": [
+     "bom_quantity"
+    ],
+    "where": [
+     "{{ Entity('product') }} = 'ER7-180OAK91-0770'",
+     "{{ Dimension('component__is_assembly') }} = false",
+     "{{ TimeDimension('explosion__valid_from', 'day') }} <= '2025-01-09' AND ({{ TimeDimension('explosion__valid_to', 'day') }} IS NULL OR {{ TimeDimension('explosion__valid_to', 'day') }} >= '2025-01-09')"
+    ]
+   }
+  }
+ },
+ "lego:lego_questions.jsonl": {
+  "questions": 190,
+  "self_built_covered": 174,
+  "mf_expressed": 174,
+  "passed": 174,
+  "failures": [],
+  "by_template": {
+   "A1": "8/8",
+   "A2": "7/7",
+   "A3": "7/7",
+   "A4": "6/6",
+   "A5": "7/7",
+   "A6": "7/7",
+   "E1": "8/8",
+   "E2": "7/7",
+   "E3": "7/7",
+   "E4": "6/6",
+   "E5": "6/6",
+   "E6": "6/6",
+   "E7": "5/5",
+   "E8": "5/5",
+   "L1": "3/3",
+   "L2": "3/3",
+   "L3": "3/3",
+   "L4": "3/3",
+   "V1": "8/8",
+   "V2": "8/8",
+   "V3": "7/7",
+   "V4": "6/6",
+   "V5": "5/5",
+   "W1": "8/8",
+   "W2": "8/8",
+   "W3": "8/8",
+   "W4": "6/6",
+   "W5": "6/6"
+  },
+  "uncovered_templates": [
+   "X1",
+   "X2",
+   "X3",
+   "X4"
+  ],
+  "compile_s_total": 3.22,
+  "exec_s_total": 0.62,
+  "reference_query_per_template": {
+   "L1": {
+    "metrics": [
+     "set_attr"
+    ],
+    "group_by": [
+     "set__release_year"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '40865-1'"
+    ]
+   },
+   "L2": {
+    "metrics": [
+     "inventory_versions"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '75954-1'"
+    ]
+   },
+   "L3": {
+    "metrics": [
+     "set_contents"
+    ],
+    "group_by": [
+     "item"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '5004894-1'",
+     "{{ Dimension('composition__item_kind') }} = 'set'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "L4": {
+    "metrics": [
+     "set_contents_item_count"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '76407-1'",
+     "{{ Dimension('composition__item_kind') }} = 'minifig'",
+     "{{ Dimension('composition__is_current') }} = true"
+    ]
+   },
+   "E1": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '80033-1'",
+     "{{ Entity('item') }} = '15504'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E2": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = 'BAM2020-1'",
+     "{{ Entity('item') }} = '41879a'",
+     "{{ Dimension('color__name') }} = 'Green'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E3": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '5003832-1'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E4": {
+    "metrics": [
+     "distinct_part_count"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '70909-1'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E5": {
+    "metrics": [
+     "distinct_part_color_count"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '71497-1'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E6": {
+    "metrics": [
+     "minifig_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '66779-1'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E7": {
+    "metrics": [
+     "part_quantity_incl_spares"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '41319-1'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "E8": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '43205-1'",
+     "{{ Dimension('item__category') }} = 'Minifig Headwear'",
+     "{{ Dimension('explosion__is_current') }} = true"
+    ]
+   },
+   "W1": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('item') }} = '11170pr0009'"
+    ]
+   },
+   "W2": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('item') }} = '23186'",
+     "{{ Dimension('color__name') }} = 'Black'"
+    ]
+   },
+   "W3": {
+    "metrics": [
+     "where_used"
+    ],
+    "group_by": [
+     "set"
+    ],
+    "where": [
+     "{{ Entity('item') }} = 'fig-001166'"
+    ]
+   },
+   "W4": {
+    "metrics": [
+     "where_used_count"
+    ],
+    "where": [
+     "{{ Entity('item') }} = '43722'",
+     "{{ Dimension('color__name') }} = 'Lime'",
+     "{{ Dimension('set__release_year') }} = 2018"
+    ]
+   },
+   "W5": {
+    "metrics": [
+     "where_used"
+    ],
+    "group_by": [
+     "set"
+    ],
+    "where": [
+     "{{ Entity('item') }} = '3850'",
+     "{{ Dimension('color__name') }} = 'Reddish Brown'"
+    ]
+   },
+   "A1": {
+    "metrics": [
+     "set_attr"
+    ],
+    "where": [
+     "({{ Dimension('set__theme_level_1') }} = 'Advent' OR {{ Dimension('set__theme_level_2') }} = 'Advent' OR {{ Dimension('set__theme_level_3') }} = 'Advent')",
+     "{{ Dimension('set__release_year') }} = 2018"
+    ]
+   },
+   "A2": {
+    "metrics": [
+     "catalog_minifigs"
+    ],
+    "where": [
+     "({{ Dimension('set__theme_level_1') }} = 'Super Heroes DC' OR {{ Dimension('set__theme_level_2') }} = 'Super Heroes DC' OR {{ Dimension('set__theme_level_3') }} = 'Super Heroes DC')",
+     "{{ Dimension('set__release_year') }} = 2025"
+    ]
+   },
+   "A3": {
+    "metrics": [
+     "catalog_parts"
+    ],
+    "where": [
+     "({{ Dimension('set__theme_level_1') }} = 'Juniors' OR {{ Dimension('set__theme_level_2') }} = 'Juniors' OR {{ Dimension('set__theme_level_3') }} = 'Juniors')",
+     "{{ Dimension('set__release_year') }} = 2017"
+    ]
+   },
+   "A4": {
+    "metrics": [
+     "set_attr"
+    ],
+    "group_by": [
+     "set__theme_root"
+    ],
+    "where": [
+     "{{ Dimension('set__release_year') }} = 2024"
+    ],
+    "order_by": [
+     "-set_attr"
+    ],
+    "limit": 3
+   },
+   "A5": {
+    "metrics": [
+     "catalog_parts"
+    ],
+    "where": [
+     "{{ Dimension('set__release_year') }} = 2014",
+     "{{ Entity('item') }} = '86500'",
+     "{{ Dimension('color__name') }} = 'Trans-Brown'"
+    ]
+   },
+   "A6": {
+    "metrics": [
+     "catalog_color_count"
+    ],
+    "where": [
+     "({{ Dimension('set__theme_level_1') }} = 'Duplo' OR {{ Dimension('set__theme_level_2') }} = 'Duplo' OR {{ Dimension('set__theme_level_3') }} = 'Duplo')",
+     "{{ Dimension('set__release_year') }} = 2013"
+    ]
+   },
+   "V1": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '42112-1'",
+     "{{ Entity('item') }} = '48989'",
+     "{{ Dimension('explosion__root_version') }} = 1"
+    ]
+   },
+   "V2": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '8486-1'",
+     "{{ Dimension('explosion__root_version') }} = 1"
+    ]
+   },
+   "V3": {
+    "metrics": [
+     "distinct_part_count"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '7970-1'",
+     "{{ Dimension('explosion__root_version') }} = 1"
+    ]
+   },
+   "V4": {
+    "metrics": [
+     "minifig_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '71001-17'",
+     "{{ Dimension('explosion__root_version') }} = 1"
+    ]
+   },
+   "V5": {
+    "metrics": [
+     "part_quantity"
+    ],
+    "where": [
+     "{{ Entity('set') }} = '41435-1'",
+     "{{ Dimension('explosion__root_version') }} = 3"
+    ]
+   }
+  }
+ }
+}

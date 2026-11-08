@@ -9,32 +9,57 @@ import duckdb, kuzu
 import dsconf
 import prompts as P
 import semantic as SEM
+import mf_layer as MF
 from llm import chat
 from semantic import compile_query
 from score import match
 
 TASK = dict(dsconf.task_table(P, SEM.SPEC))
-# Ablations added after the simulated review (identical wording on every dataset):
-#  cypher_h     = Graph-T plus a syntax note on multi-type variable-length patterns (documentation symmetry check)
-#  semantic_abs = Metric plus an explicit permission to answer UNSUPPORTED (optional-refusal control for Metric-R)
+# Every Cypher note (both engines, both modelings, all datasets) states the multi-type pattern syntax A|B.
+# Ablations (identical wording on every dataset):
+#  cypher_nh / neo_t_nh = Graph-T without the multi-type sentence (the first main run's XB and LEGO wording)
+#  semantic_abs         = Metric plus an explicit permission to answer UNSUPPORTED (optional-refusal control for Metric-R)
+_MULTI = re.compile(r"several relationship\s+types are matched with -\[e:A\|B\*1\.\.6\]->; ")
+TASK["cypher_nh"] = (TASK["cypher"][0], _MULTI.sub("", TASK["cypher"][1]))
+#  cypher_h = Graph-T with the same syntax repeated as a separate note after the business rules (end of the prompt)
 MULTI_TYPE_NOTE = ("\nAdditional Kuzu dialect note: one variable-length pattern may match several relationship types, "
                    "written -[e:A|B*1..6]->.")
 TASK["cypher_h"] = (TASK["cypher"][0], TASK["cypher"][1] + MULTI_TYPE_NOTE)
 # Second graph engine (Neo4j 5): same schema text, Kuzu dialect note replaced by an equally syntax-only Neo4j note
-NEO_NOTE = ("Neo4j dialect notes: a variable-length pattern is written -[:R*1..6]->; bind the path, p = (a)-[:R*1..6]->(b), "
-            "and use relationships(p); all(r IN relationships(p) WHERE r.qty > 0) filters every relationship of the path; "
-            "reduce(acc = 1, r IN relationships(p) | acc * r.qty) multiplies a property along the path; date literals are "
-            "written date('2026-10-01'); d.year extracts a field.")
+NEO_NOTE_NH = ("Neo4j dialect notes: a variable-length pattern is written -[:R*1..6]->; bind the path, p = (a)-[:R*1..6]->(b), "
+               "and use relationships(p); all(r IN relationships(p) WHERE r.qty > 0) filters every relationship of the path; "
+               "reduce(acc = 1, r IN relationships(p) | acc * r.qty) multiplies a property along the path; date literals are "
+               "written date('2026-10-01'); d.year extracts a field.")
+NEO_NOTE = NEO_NOTE_NH.replace("filters every relationship of the path; ", "filters every relationship of the path; "
+                               "several relationship types are matched with -[:A|B*1..6]->; ")
 
-
-def _neo_doc(doc):
-    doc = re.sub(r"Kuzu dialect notes:.*?(?=\n\n|\Z)", NEO_NOTE, doc, flags=re.S)
+def _neo_doc(doc, note=NEO_NOTE):
+    doc = re.sub(r"Kuzu dialect notes:.*?(?=\n\n|\Z)", lambda m: note, doc, flags=re.S)
     return doc.replace("(Kuzu, openCypher dialect)", "(Neo4j 5, Cypher)").replace("Kuzu", "Neo4j")
 
 
 _neo_inst = "Write ONE Neo4j Cypher query that answers the question. Return only the query in a ```cypher block."
 TASK["neo_t"] = (_neo_inst, _neo_doc(TASK["cypher"][1]))
 TASK["neo_u"] = (_neo_inst, _neo_doc(TASK["cypher_u"][1]))
+TASK["neo_t_nh"] = (_neo_inst, _neo_doc(TASK["cypher_nh"][1], NEO_NOTE_NH))
+# DuckDB dialect note (sql_dn, sql_u_dn, sql_x_dn): the counterpart of the Kuzu note, syntax only, placed where the Kuzu
+# note is (after the schema, before the business rules); added after review, the main-grid SQL substrates have no note
+DUCK_NOTE = ("DuckDB dialect notes: a recursive CTE has one anchor query and one recursive query, WITH RECURSIVE t AS (anchor "
+             "UNION ALL step), and only that step may reference t; to follow several edge tables, join t to a UNION ALL of those "
+             "tables inside the step; date literals are written DATE '2026-10-01'; extract('year' FROM d) extracts a field.")
+for _s in ("sql", "sql_u", "sql_x"):
+    if _s in TASK:
+        _doc = TASK[_s][1].replace("\n\nBusiness rules:", "\n\n" + DUCK_NOTE + "\n\nBusiness rules:", 1)
+        assert DUCK_NOTE in _doc, _s
+        TASK[_s + "_dn"] = (TASK[_s][0], _doc)
+# Graph-X with a usage sentence (cypher_x_tn): tests whether the main models' re-traversal of the materialized edge is
+# removed by saying how to use it; added after review
+X_NOTE = ("an EXPLODES edge already links a root to every item below it with the total quantity, so match one EXPLODES "
+          "edge and never traverse EXPLODES with *; ")
+if "cypher_x" in TASK:
+    _doc = TASK["cypher_x"][1].replace("Kuzu dialect notes: ", "Kuzu dialect notes: " + X_NOTE, 1)
+    assert X_NOTE in _doc
+    TASK["cypher_x_tn"] = (TASK["cypher_x"][0], _doc)
 TASK["semantic_abs"] = (TASK["semantic"][0] + " If no metric can express the question, reply with the single word "
                         "UNSUPPORTED instead of a query.", SEM.SPEC)
 
@@ -56,6 +81,7 @@ TIMEOUT = 60
 _tls = threading.local()
 _sql = duckdb.connect(dsconf.SQL_DB, read_only=True)
 _sql_u = duckdb.connect(dsconf.SQL_U_DB, read_only=True)
+_sql_x = duckdb.connect(dsconf.SQL_X_DB, read_only=True) if os.path.exists(dsconf.SQL_X_DB) else None  # closure (build_closure.py)
 _wlock = threading.Lock()
 
 
@@ -70,7 +96,7 @@ def extract(text, lang):
 def run_sql(sql, db="sql"):
     cur = getattr(_tls, db, None)
     if cur is None:
-        cur = (_sql if db == "sql" else _sql_u).cursor()
+        cur = (_sql if db == "sql" else _sql_x if db == "sql_x" else _sql_u).cursor()
         # generated recursive queries can spill gigabytes to disk; cap it so a runaway query fails instead
         cur.execute("SET max_temp_directory_size = '300MB'")
         setattr(_tls, db, cur)
@@ -130,6 +156,11 @@ def route(substrate, text):
     return "metric" if substrate in ("semantic", "semantic_abs", "hybrid") else substrate
 
 
+def q_(text, base):
+    q = extract(text, "sql")
+    return q, run_sql(q, base)
+
+
 def execute(substrate, text):
     if substrate == "classify":
         substrate = "semantic"
@@ -142,14 +173,24 @@ def execute(substrate, text):
             return q, run_sql(q, "sql")
         q = extract(text, "json")
         return q, run_sql(compile_query(json.loads(q)))
-    lang = {"sql": "sql", "sql_u": "sql", "cypher": "cypher", "cypher_h": "cypher", "cypher_u": "cypher", "semantic": "json",
-            "neo_t": "cypher", "neo_u": "cypher"}[substrate]
+    if substrate == "metricflow":  # public-standard semantic layer: MetricFlow compiles, SQL runs on data/mf_<ds>.duckdb
+        q = extract(text, "json")
+        return q, MF.run(MF.compile_mf(json.loads(q), dsconf.DS), dsconf.DS)
+    lang = {"sql": "sql", "sql_u": "sql", "cypher": "cypher", "cypher_nh": "cypher", "cypher_h": "cypher", "cypher_u": "cypher", "semantic": "json",
+            "neo_t": "cypher", "neo_u": "cypher", "neo_t_nh": "cypher", "sql_x": "sql", "cypher_x": "cypher",
+            "sql_dn": "sql", "sql_u_dn": "sql", "sql_x_dn": "sql", "cypher_x_tn": "cypher"}[substrate]
+    if substrate.endswith("_dn"):  # same databases as the main-grid SQL substrates
+        return q_(text, substrate[:-3])
     q = extract(text, lang)
-    if substrate in ("neo_t", "neo_u"):
-        return q, run_neo(q, substrate[-1])
+    if substrate == "sql_x":
+        return q, run_sql(q, "sql_x")
+    if substrate in ("cypher_x", "cypher_x_tn"):
+        return q, cypher_subprocess(dsconf.KG_X, q)
+    if substrate in ("neo_t", "neo_u", "neo_t_nh"):
+        return q, run_neo(q, "t" if substrate.startswith("neo_t") else "u")
     if substrate in ("sql", "sql_u"):
         return q, run_sql(q, substrate)
-    if substrate in ("cypher", "cypher_h", "cypher_u"):
+    if substrate in ("cypher", "cypher_nh", "cypher_h", "cypher_u"):
         return q, run_cypher(q, "kg_u" if substrate == "cypher_u" else "kg")
     return q, run_sql(compile_query(json.loads(q)))
 

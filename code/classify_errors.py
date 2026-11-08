@@ -41,8 +41,11 @@ def main():
     qs = {json.loads(l)["qid"]: json.loads(l) for l in open(dsconf.QFILE)}
     files = os.environ.get("N1_TAX_RUNS", "runs.jsonl,runs_u.jsonl").split(",")
     has_m2 = any(f.endswith("_m2.jsonl") for f in files)   # m2 supersedes Metric/Metric-R in the main file
+    has_g2 = any(f.endswith("_g2.jsonl") for f in files)   # g2 supersedes Graph-T/Graph-U (uniform Cypher note)
     R = [r for f in files for r in map(json.loads, open(os.path.join(HERE, "results", f)))
-         if not has_m2 or f.endswith("_m2.jsonl") or r["substrate"] not in ("semantic", "classify")]
+         if (not has_m2 or f.endswith("_m2.jsonl") or r["substrate"] not in ("semantic", "classify"))
+         and (not has_g2 or f.endswith("_g2.jsonl") or r["substrate"] not in ("cypher", "cypher_u"))
+         and r["substrate"] != "cypher_nh"]
     R = [r for r in R if r["rep"] == 0 and not r["correct"] and r["outcome"] != "abstain"
          and (r["substrate"] in TASK or r["substrate"] == "classify")]
     cap = int(os.environ.get("N1_TAX_CAP", "0"))

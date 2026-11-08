@@ -1,0 +1,13 @@
+version: 2
+sources:
+- name: x
+  schema: main
+  tables:
+  - name: product
+  - name: product_subcategory
+  - name: product_category
+  - name: sales_territory
+  - name: sales_order
+  - name: sales_order_line
+  - name: u_composition
+  - name: u_explosion

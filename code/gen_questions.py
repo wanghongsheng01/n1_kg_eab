@@ -14,9 +14,16 @@ W = World(os.path.join(HERE, "data", "xb.duckdb"))
 MULT = int(os.environ.get("N1_MULT", "1"))          # 1 = the frozen 50-question pilot set; 4 = the 200-question main set
 OUTNAME = os.environ.get("N1_OUT", "questions.jsonl")
 rng = random.Random(20261103 if MULT == 1 else 20261105)
+
+# Fresh replication set (N1_FRESH=1, review round): a new seed, instances of the main set excluded, qids prefixed F.
+FRESH = os.environ.get("N1_FRESH") == "1"
+if FRESH:
+    rng = random.Random(20261108)
 YEARS = (2024, 2025) if MULT == 1 else (2023, 2024, 2025)
 Q = []
 used = set()
+if FRESH:
+    used |= {(q["tpl"], q["text"]) for q in map(json.loads, open(os.path.join(HERE, "data", "xb_questions.jsonl")))}
 
 
 def add(cls, tpl, text, gtype, gold, **meta):
@@ -52,6 +59,8 @@ def pick(n, gen):
             return
         if gen():
             k += 1
+    if FRESH:  # the main set already used most instances of a small template: keep the rest
+        print("fresh: short template", getattr(gen, "__name__", "?"), k, "of", n, flush=True); return
     raise RuntimeError("could not draw enough instances")
 
 
@@ -301,6 +310,9 @@ pick(3 * MULT, V1); pick(2 * MULT, V2); pick(3 * MULT, V3); pick(2 * MULT, V4)
 for q in Q:
     if q["gold_type"] == "scalar":
         q["gold"] = float(q["gold"])
+if FRESH:
+    for q in Q:
+        q["qid"] = "F" + q["qid"]
 with open(os.path.join(HERE, "data", OUTNAME), "w") as f:
     for q in Q:
         f.write(json.dumps(q) + "\n")

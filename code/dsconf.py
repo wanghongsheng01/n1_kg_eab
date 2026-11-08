@@ -14,6 +14,8 @@ SQL_DB = os.path.join(DATA, f"{DS}.duckdb")
 SQL_U_DB = os.path.join(DATA, f"{DS}_u.duckdb")
 KG = os.path.join(DATA, f"{DS}.kuzu")
 KG_U = os.path.join(DATA, f"{DS}_u.kuzu")
+SQL_X_DB = os.path.join(DATA, f"{DS}_x.duckdb")   # closure substrates sql_x / cypher_x (build_closure.py)
+KG_X = os.path.join(DATA, f"{DS}_x.kuzu")
 # xb keeps the frozen 50-question pilot as default; the main sets are <ds>_questions.jsonl
 QFILE = os.path.join(DATA, os.environ.get("N1_QFILE", "questions.jsonl" if DS == "xb" else f"{DS}_questions.jsonl"))
 COVFILE = os.path.join(DATA, os.environ.get("N1_COVFILE", "s3_coverage.json" if DS == "xb" else f"{DS}_s3_coverage.json"))
@@ -22,12 +24,25 @@ COVFILE = os.path.join(DATA, os.environ.get("N1_COVFILE", "s3_coverage.json" if 
 def task_table(P, SPEC):
     """The per-substrate (instruction, documentation) table; datasets other than xb only ship the documents."""
     if hasattr(P, "TASK"):
-        return P.TASK
+        return {**P.TASK, **_mf_task()}
     q = "Write ONE {} query that answers the question. Return only the query in a ```{} block."
-    return {
+    x = {"sql_x": (q.format("DuckDB SQL", "sql"), P.SQL_X_DOC)} if hasattr(P, "SQL_X_DOC") else {}
+    x.update({"cypher_x": (q.format("Kuzu Cypher", "cypher"), P.CYPHER_X_DOC)} if hasattr(P, "CYPHER_X_DOC") else {})
+    return {**x,
         "sql": (q.format("DuckDB SQL", "sql"), P.SQL_DOC),
         "sql_u": (q.format("DuckDB SQL", "sql"), P.SQL_U_DOC),
         "cypher": (q.format("Kuzu Cypher", "cypher"), P.CYPHER_DOC),
         "cypher_u": (q.format("Kuzu Cypher", "cypher"), P.CYPHER_U_DOC),
         "semantic": ("Write ONE semantic-layer JSON query that answers the question. Return only the JSON in a ```json block.", SPEC),
+        **_mf_task(),
     }
+
+
+def _mf_task():
+    """Substrate `metricflow`: the public-standard semantic layer (dbt MetricFlow, code/mf_layer.py); its documentation is
+    built by code/metricflow/build.py. Absent (no entry) for datasets without a MetricFlow project."""
+    p = os.path.join(CODE, "metricflow", DS, "spec_mf.txt")
+    if not os.path.exists(p):
+        return {}
+    return {"metricflow": ("Write ONE MetricFlow query (the arguments of `mf query` as one JSON object) that answers the "
+                           "question. Return only the JSON in a ```json block.", open(p).read())}

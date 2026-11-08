@@ -46,7 +46,7 @@ Relationships:
 (:SalesOrder)-[:HAS_LINE {{line_no, qty, unit_price DOUBLE}}]->(:Listing)
 
 Kuzu dialect notes: variable-length patterns need an upper bound, e.g. -[e:HAS_PART*1..6]->; a predicate on every
-relationship of a variable-length pattern is written -[e:HAS_PART*1..6 (r, n | WHERE r.qty > 0)]->; rels(e) returns
+relationship of a variable-length pattern is written -[e:HAS_PART*1..6 (r, n | WHERE r.qty > 0)]->; several relationship types are matched with -[e:A|B*1..6]->; rels(e) returns
 the relationship list, properties(rels(e), 'qty') the list of qty values, list_product(list) multiplies a list;
 list_product of an empty list is 1 (so *0..k paths work); date literals are written date('2026-10-01');
 date_part('year', d) extracts a field (year(d) does not exist).
@@ -81,11 +81,28 @@ CYPHER_U_DOC = CYPHER_DOC.replace("""(:Component)-[:HAS_PART {qty, valid_from DA
 (:Component)-[:CONTAINS {qty, valid_from DATE, valid_to DATE}]->(:Component)""").replace(
     "-[e:HAS_PART*1..6]->", "-[e:CONTAINS*1..6]->").replace("-[e:HAS_PART*1..6 (r, n", "-[e:CONTAINS*1..6 (r, n").replace(RULES, RULES_U)
 
+# Closure substrates (build_closure.py): SQL-U / Graph-U plus the materialized total-requirements relation; same rules text.
+_X_MEANING = """qty = total quantity of the item contained in ONE unit of the root, multiplied along every composition path and summed
+   -- over all paths, on every date d with valid_from <= d and (valid_to IS NULL or d <= valid_to); one row per root, item at
+   -- any level below it (assemblies and parts alike) and interval of constant qty"""
+_U_KINDS = "   -- kinds are 'sku', 'model', 'component'; codes are sku_code, model_code, component_code\n"
+SQL_X_DOC = SQL_U_DOC.replace(_U_KINDS, _U_KINDS + """u_explosion(root_kind VARCHAR, root_code VARCHAR, item_kind VARCHAR, item_code VARCHAR, qty DOUBLE, valid_from DATE, valid_to DATE)
+   -- materialized from u_composition (kinds and codes as there):
+   -- """ + _X_MEANING + "\n")
+_U_LAST = "(:Component)-[:CONTAINS {qty, valid_from DATE, valid_to DATE}]->(:Component)\n"
+CYPHER_X_DOC = CYPHER_U_DOC.replace(_U_LAST, _U_LAST + "".join(
+    f"({a})-[:EXPLODES {{qty DOUBLE, valid_from DATE, valid_to DATE}}]->({b})\n" for a, b in
+    [(":SKU", ":SKU"), (":SKU", ":Model"), (":SKU", ":Component"), (":Model", ":Component"), (":Component", ":Component")]) +
+    "   -- materialized from CONTAINS; start node = root, end node = item:\n   -- " + _X_MEANING + "\n")
+assert SQL_X_DOC != SQL_U_DOC and CYPHER_X_DOC != CYPHER_U_DOC
+
 TASK = {
     "sql": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_DOC),
     "cypher": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_DOC),
     "sql_u": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_U_DOC),
     "cypher_u": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_U_DOC),
+    "sql_x": ("Write ONE DuckDB SQL query that answers the question. Return only the query in a ```sql block.", SQL_X_DOC),
+    "cypher_x": ("Write ONE Kuzu Cypher query that answers the question. Return only the query in a ```cypher block.", CYPHER_X_DOC),
     "semantic_abs": ("Write ONE semantic-layer JSON query that answers the question. Return only the JSON in a ```json block. "
                      "If no metric can express the question, reply with the single word UNSUPPORTED instead of a query.", SPEC),
     "hybrid": ("Prefer ONE semantic-layer JSON query (in a ```json block). Only if no metric can express the question, write ONE "

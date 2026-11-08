@@ -1,0 +1,102 @@
+metrics:
+- name: part_quantity
+  description: Exploded part quantities for ONE unit of one set (or minifig) at any depth; spare parts excluded. Select the
+    set with an Entity('set') filter and the inventory with explosion__is_current = true or explosion__root_version = n.
+  type: simple
+  label: part_quantity
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__item_kind'') }} = ''part'' AND {{ Dimension(''explosion__is_spare'') }} = false'
+- name: part_quantity_incl_spares
+  description: As part_quantity but spare parts included.
+  type: simple
+  label: part_quantity_incl_spares
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__item_kind'') }} = ''part'''
+- name: distinct_part_count
+  description: Number of distinct part numbers (colours ignored) in the explosion of a set; spares excluded.
+  type: simple
+  label: distinct_part_count
+  type_params:
+    measure: explosion_items
+  filter: '{{ Dimension(''explosion__item_kind'') }} = ''part'' AND {{ Dimension(''explosion__is_spare'') }} = false'
+- name: distinct_part_color_count
+  description: Number of distinct part x colour combinations in the explosion of a set; spares excluded.
+  type: simple
+  label: distinct_part_color_count
+  type_params:
+    measure: explosion_part_colors
+  filter: '{{ Dimension(''explosion__item_kind'') }} = ''part'' AND {{ Dimension(''explosion__is_spare'') }} = false'
+- name: minifig_quantity
+  description: Exploded minifig quantities for ONE unit of one set (minifigs inside nested sets included).
+  type: simple
+  label: minifig_quantity
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__item_kind'') }} = ''minifig'''
+- name: set_contents
+  description: FIRST-LEVEL rows of one inventory of one set (no explosion; spares included as listed); value = listed quantity.
+  type: simple
+  label: set_contents
+  type_params:
+    measure: composition_qty
+- name: set_contents_item_count
+  description: Number of distinct items (item codes) listed at the first level of one inventory of one set.
+  type: simple
+  label: set_contents_item_count
+  type_params:
+    measure: composition_items
+- name: where_used
+  description: Sets that contain an item at any depth in their CURRENT exploded contents (spare parts excluded); value = quantity
+    of the item per one unit of the set. Filter the item with an Entity('item') filter (and color__name), group by set.
+  type: simple
+  label: where_used
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__root_kind'') }} = ''set'' AND {{ Dimension(''explosion__is_current'') }} = true AND {{
+    Dimension(''explosion__is_spare'') }} = false'
+- name: where_used_count
+  description: Number of distinct sets that contain an item at any depth in their current exploded contents (spares excluded).
+  type: simple
+  label: where_used_count
+  type_params:
+    measure: explosion_roots
+  filter: '{{ Dimension(''explosion__root_kind'') }} = ''set'' AND {{ Dimension(''explosion__is_current'') }} = true AND {{
+    Dimension(''explosion__is_spare'') }} = false'
+- name: catalog_parts
+  description: Exploded part quantities summed over sets, each set's current inventory exploded on its own (spares excluded).
+  type: simple
+  label: catalog_parts
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__root_kind'') }} = ''set'' AND {{ Dimension(''explosion__is_current'') }} = true AND {{
+    Dimension(''explosion__item_kind'') }} = ''part'' AND {{ Dimension(''explosion__is_spare'') }} = false'
+- name: catalog_color_count
+  description: Number of distinct colours among the exploded parts of the selected sets (current inventories, spares excluded).
+  type: simple
+  label: catalog_color_count
+  type_params:
+    measure: explosion_colors
+  filter: '{{ Dimension(''explosion__root_kind'') }} = ''set'' AND {{ Dimension(''explosion__is_current'') }} = true AND {{
+    Dimension(''explosion__item_kind'') }} = ''part'' AND {{ Dimension(''explosion__is_spare'') }} = false'
+- name: catalog_minifigs
+  description: Exploded minifig quantities summed over sets, each set exploded on its own (current inventories).
+  type: simple
+  label: catalog_minifigs
+  type_params:
+    measure: explosion_qty
+  filter: '{{ Dimension(''explosion__root_kind'') }} = ''set'' AND {{ Dimension(''explosion__is_current'') }} = true AND {{
+    Dimension(''explosion__item_kind'') }} = ''minifig'''
+- name: set_attr
+  description: Number of sets (one row per set; group by set attributes).
+  type: simple
+  label: set_attr
+  type_params:
+    measure: set_count
+- name: inventory_versions
+  description: Number of inventory versions of a set.
+  type: simple
+  label: inventory_versions
+  type_params:
+    measure: inventory_count

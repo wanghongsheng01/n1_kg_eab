@@ -1,0 +1,65 @@
+metrics:
+- name: bom_quantity
+  description: Total quantity of each component needed for ONE unit of a product, exploded through all BOM levels. Select
+    the product with an Entity('product') filter and the BOM state with explosion__is_current or the validity interval.
+  type: simple
+  label: bom_quantity
+  type_params:
+    measure: explosion_qty
+- name: bom_direct_quantity
+  description: Quantity of each DIRECT (first-level) BOM line of a product per unit (the max_depth = 1 case of bom_quantity).
+  type: simple
+  label: bom_direct_quantity
+  type_params:
+    measure: composition_qty
+- name: bom_component_count
+  description: Number of distinct components in the all-level explosion of a product (combine with the filters of bom_quantity).
+  type: simple
+  label: bom_component_count
+  type_params:
+    measure: explosion_items
+- name: purchased_cost
+  description: Sum over PARTS (make_flag = false) at any level of (quantity per unit x standard_cost) for ONE unit of a product.
+  type: simple
+  label: purchased_cost
+  type_params:
+    measure: explosion_cost
+  filter: '{{ Dimension(''component__make_flag'') }} = false'
+- name: where_used
+  description: Quantity of a component per one unit of each product that contains it at any BOM level (every assembly product
+    is considered, including intermediate sub-assemblies; filter product__category = 'Bikes' for bikes only).
+  type: simple
+  label: where_used
+  type_params:
+    measure: explosion_qty
+- name: where_used_count
+  description: Number of distinct products that contain a component at any level (combine with the filters of where_used).
+  type: simple
+  label: where_used_count
+  type_params:
+    measure: explosion_roots
+- name: units_sold
+  description: Sum of order-line quantities.
+  type: simple
+  label: units_sold
+  type_params:
+    measure: sold_units
+- name: revenue
+  description: Sum of order-line line_total (after discount; excludes tax and freight).
+  type: simple
+  label: revenue
+  type_params:
+    measure: line_total
+- name: component_demand
+  description: 'Units of each product required by order lines: units sold directly plus units contained at any level of the
+    sold products, using the BOM valid on each order date.'
+  type: simple
+  label: component_demand
+  type_params:
+    measure: demand_units
+- name: product_attr
+  description: Number of products (one row per product; group by product attributes).
+  type: simple
+  label: product_attr
+  type_params:
+    measure: product_count

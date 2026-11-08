@@ -1,0 +1,12 @@
+name: mf_aw
+version: 1.0.0
+config-version: 2
+profile: mf_aw
+model-paths:
+- models
+target-path: target
+clean-targets:
+- target
+models:
+  mf_aw:
+    +materialized: table

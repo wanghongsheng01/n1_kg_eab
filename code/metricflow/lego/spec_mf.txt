@@ -1,0 +1,112 @@
+SEMANTIC LAYER `lego` (a dbt MetricFlow semantic layer: governed metrics; you query it with a MetricFlow query, not SQL)
+
+Business definitions baked into every metric:
+- A set's contents come from its inventory. A set may have several inventory versions (1, 2, ...); the CURRENT inventory
+  is the highest version. Per-set metrics (part_quantity, minifig_quantity, distinct_*, set_contents*) hold one row group
+  per inventory version of the queried set, so every such query must select ONE version, either the current one:
+  {{ Dimension('explosion__is_current') }} = true   (composition__is_current for set_contents*)
+  or a named one: {{ Dimension('explosion__root_version') }} = 2. A named version applies to the queried set's own
+  inventory only; nested sets and minifigs inside it always use their own current inventory.
+- An inventory lists parts (part x colour x quantity, flagged spare or not), nested sets x quantity and minifigs x quantity.
+  A minifig has its own inventory of parts. Contents are exploded recursively: quantities multiply along the nesting
+  path and sum over all paths ("at any depth" = through nested sets and minifigs).
+- Spare parts are excluded by the metric definitions (part_quantity_incl_spares includes them).
+- Part identity: the item entity is the part_num (all colours together); add color__name for part x colour.
+- Themes form a hierarchy. set__theme_name is the set's own theme; set__theme_root is its top-level ancestor;
+  set__theme_level_1/2/3 is the theme path from the root down to the set's theme. The sets of theme T and of all its
+  sub-themes are those with T in one of theme_level_1, theme_level_2, theme_level_3.
+- Minifigs are not sets. Catalog metrics (catalog_*, where_used*) explode every set's CURRENT inventory on its own (a set
+  nested in another is also counted itself).
+
+Query format: ONE JSON object holding the arguments of `mf query`:
+{"metrics": [<metric name>, ...], "group_by": [<group-by item>, ...], "where": [<filter>, ...],
+ "order_by": [<metric or group-by item>, or "-<...>" for descending], "limit": <int>}
+- A group-by item is an entity name (e.g. "item"; the result column holds its code) or a dimension
+  "<entity>__<dimension>" (e.g. "set__release_year"). Time dimensions take a grain suffix: "metric_time__year", "metric_time__quarter",
+  "metric_time__month", "metric_time__day" (or "<entity>__<time dimension>__<grain>"); the group-by item
+  "TimeDimension('metric_time', date_part_name='year')" (also 'quarter', 'month') gives the integer year / quarter / month.
+- Each where filter is a SQL boolean expression over templated references; all filters are ANDed:
+  {{ Dimension('<entity>__<dimension>') }} = 'value', {{ Entity('<entity>') }} = 'code',
+  {{ TimeDimension('metric_time', 'day') }} >= '2024-01-01', {{ TimeDimension('metric_time', 'year') }} = '2024-01-01'
+  (a grain truncates the date: year -> Jan 1, quarter -> first day of the quarter), and
+  {{ TimeDimension('metric_time', date_part_name='year') }} = 2024 (also 'quarter', 'month').
+  A filter may use any dimension or entity listed for the metric, also ones not in group_by.
+- The result has one column per group-by item plus one column per metric (named like the metric).
+- MetricFlow has no query parameters and no defaults: the product / component / set / item a metric is about is selected
+  with an Entity filter, and every other choice (BOM state, version, kind, ...) with a dimension filter.
+
+Metrics:
+1. part_quantity -- Exploded part quantities for ONE unit of one set (or minifig) at any depth; spare parts excluded. Select the set with an Entity('set') filter and the inventory with explosion__is_current = true or explosion__root_version = n.
+   always applied (metric filter): {{ Dimension('explosion__item_kind') }} = 'part' AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+2. part_quantity_incl_spares -- As part_quantity but spare parts included.
+   always applied (metric filter): {{ Dimension('explosion__item_kind') }} = 'part'
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+3. distinct_part_count -- Number of distinct part numbers (colours ignored) in the explosion of a set; spares excluded.
+   always applied (metric filter): {{ Dimension('explosion__item_kind') }} = 'part' AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+4. distinct_part_color_count -- Number of distinct part x colour combinations in the explosion of a set; spares excluded.
+   always applied (metric filter): {{ Dimension('explosion__item_kind') }} = 'part' AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+5. minifig_quantity -- Exploded minifig quantities for ONE unit of one set (minifigs inside nested sets included).
+   always applied (metric filter): {{ Dimension('explosion__item_kind') }} = 'minifig'
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+6. set_contents -- FIRST-LEVEL rows of one inventory of one set (no explosion; spares included as listed); value = listed quantity.
+   entities: color, item, set
+   dimensions: color__name, composition__is_current, composition__is_spare, composition__item_kind, composition__root_kind, composition__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+7. set_contents_item_count -- Number of distinct items (item codes) listed at the first level of one inventory of one set.
+   entities: color, item, set
+   dimensions: color__name, composition__is_current, composition__is_spare, composition__item_kind, composition__root_kind, composition__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+8. where_used -- Sets that contain an item at any depth in their CURRENT exploded contents (spare parts excluded); value = quantity of the item per one unit of the set. Filter the item with an Entity('item') filter (and color__name), group by set.
+   always applied (metric filter): {{ Dimension('explosion__root_kind') }} = 'set' AND {{ Dimension('explosion__is_current') }} = true AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+9. where_used_count -- Number of distinct sets that contain an item at any depth in their current exploded contents (spares excluded).
+   always applied (metric filter): {{ Dimension('explosion__root_kind') }} = 'set' AND {{ Dimension('explosion__is_current') }} = true AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+10. catalog_parts -- Exploded part quantities summed over sets, each set's current inventory exploded on its own (spares excluded).
+   always applied (metric filter): {{ Dimension('explosion__root_kind') }} = 'set' AND {{ Dimension('explosion__is_current') }} = true AND {{ Dimension('explosion__item_kind') }} = 'part' AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+11. catalog_color_count -- Number of distinct colours among the exploded parts of the selected sets (current inventories, spares excluded).
+   always applied (metric filter): {{ Dimension('explosion__root_kind') }} = 'set' AND {{ Dimension('explosion__is_current') }} = true AND {{ Dimension('explosion__item_kind') }} = 'part' AND {{ Dimension('explosion__is_spare') }} = false
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+12. catalog_minifigs -- Exploded minifig quantities summed over sets, each set exploded on its own (current inventories).
+   always applied (metric filter): {{ Dimension('explosion__root_kind') }} = 'set' AND {{ Dimension('explosion__is_current') }} = true AND {{ Dimension('explosion__item_kind') }} = 'minifig'
+   entities: color, item, set
+   dimensions: color__name, explosion__is_current, explosion__is_spare, explosion__item_kind, explosion__root_kind, explosion__root_version, item__category, item__name, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+13. set_attr -- Number of sets (one row per set; group by set attributes).
+   entities: set
+   dimensions: set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+14. inventory_versions -- Number of inventory versions of a set.
+   entities: set
+   dimensions: inventory__is_current, inventory__version, set__name, set__num_parts, set__release_date, set__release_year, set__theme_level_1, set__theme_level_2, set__theme_level_3, set__theme_name, set__theme_root, metric_time
+
+Dimension notes:
+- composition__is_current: true for the root's current (highest-version) inventory
+- composition__is_spare: true if the part line is a spare part
+- composition__item_kind: 'part' | 'minifig' | 'set'
+- composition__root_kind: 'set' | 'minifig' (a minifig's own inventory)
+- composition__root_version: inventory version of the root set (1, 2, ...)
+- explosion__is_current: true for the root's current (highest-version) inventory
+- explosion__is_spare: true if the part line is a spare part
+- explosion__item_kind: 'part' | 'minifig' | 'set'
+- explosion__root_kind: 'set' | 'minifig' (a minifig's own inventory)
+- explosion__root_version: inventory version of the root set (1, 2, ...)
+- item__category: part category (parts only)
+- set__num_parts: catalogue piece count (not an explosion)
+- set__release_date:  (time dimension)
+- set__release_year: release year (integer)
+- set__theme_level_1: theme path, level 1 (= theme_root)
+- set__theme_level_2: theme path, level 2
+- set__theme_level_3: theme path, level 3
+- set__theme_name: the set's own theme
+- set__theme_root: top-level ancestor theme
+- metric_time: the release year for set_attr; not meaningful for the other metrics.
