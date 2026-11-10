@@ -16,7 +16,7 @@ import argparse, json, os, re, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import dsconf
 from llm import chat
-from prompts import SQL_DOC
+from prompts import SQL_DOC, SQL_U_DOC
 from semantic import SPEC, compile_query
 from score import match
 import run_pilot as RP
@@ -41,6 +41,16 @@ object per turn and nothing else:
 {"action": "answer", "step": <number of the query/run_sql step whose result is the answer>}
 The chosen result is taken as the answer, so it must contain exactly the requested value(s): one row for a single
 number, one row per item for a list. You have at most %d turns.""" % MAX_STEPS
+# review variants (N1_AGENT_VARIANT): "strict" makes the routing rule mandatory in the instruction; "unified" exposes the
+# unified composition tables (SQL-U) to run_sql instead of the source-split tables
+VARIANT = os.environ.get("N1_AGENT_VARIANT", "")
+if VARIANT == "strict":
+    SYSTEM = SYSTEM.replace("(governed metric layer; preferred when a metric fits)",
+                            "(governed metric layer; you MUST use it whenever a registered metric can answer the question)")
+    SYSTEM = SYSTEM.replace("(raw read-only SQL)", "(raw read-only SQL; only when no registered metric can answer the question)")
+    assert "MUST" in SYSTEM and "only when no" in SYSTEM
+RAW_DB, RAW_DOC = ("sql_u", SQL_U_DOC) if VARIANT == "unified" else ("sql", SQL_DOC)
+SUB = "agent" + ("_" + VARIANT if VARIANT else "")
 
 
 def tool(act, steps):
@@ -53,13 +63,13 @@ def tool(act, steps):
             raise ValueError(f"unknown metric {n!r}")
         return HEADER + "\n" + METRICS[n]
     if a == "describe_tables":
-        return SQL_DOC
+        return RAW_DOC
     if a == "query":
         q = act.get("q")
         rows = RP.run_sql(compile_query(q if isinstance(q, dict) else json.loads(q)), "sql")
         return rows
     if a == "run_sql":
-        return RP.run_sql(act["sql"], "sql")
+        return RP.run_sql(act["sql"], RAW_DB)
     raise ValueError(f"unknown action {a!r}")
 
 
@@ -72,7 +82,7 @@ def parse(text):
 
 def one(model, q, rep):
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": "QUESTION: " + q["text"]}]
-    rec = dict(dataset=dsconf.DS, model=model, substrate="agent", qid=q["qid"], cls=q["cls"], tpl=q["tpl"], rep=rep, attempts=[], tools=[])
+    rec = dict(dataset=dsconf.DS, model=model, substrate=SUB, qid=q["qid"], cls=q["cls"], tpl=q["tpl"], rep=rep, attempts=[], tools=[])
     results, final, err = {}, None, None
     for k in range(1, MAX_STEPS + 1):
         r = chat(model, msgs, rep=rep, max_tokens=1200)

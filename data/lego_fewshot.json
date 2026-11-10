@@ -1,0 +1,78 @@
+{
+ "seed": 20261109,
+ "candidates": 33,
+ "demos": [
+  {
+   "qid": "FLG-A02",
+   "tpl": "A1",
+   "cls": "A",
+   "text": "How many LEGO sets released in 2022 belong to the theme 'Super Heroes DC' or to any of its sub-themes?",
+   "queries": {
+    "sql": "SELECT COUNT(DISTINCT s.set_num)\nFROM sets s\nJOIN themes t ON s.theme_id = t.id\nWHERE s.year = 2022\n  AND (t.name = 'Super Heroes DC'\n       OR t.id IN (\n           WITH RECURSIVE subthemes AS (\n               SELECT id\n               FROM themes\n               WHERE name = 'Super Heroes DC'\n               UNION ALL\n               SELECT c.id\n               FROM themes c\n               JOIN subthemes p ON c.parent_id = p.id\n           )\n           SELECT id FROM subthemes\n       ));",
+    "sql_u": "SELECT COUNT(DISTINCT s.set_num)\nFROM sets s\nJOIN themes t ON s.theme_id = t.id\nWHERE s.year = 2022\n  AND t.id IN (\n      WITH RECURSIVE theme_tree AS (\n          SELECT id\n          FROM themes\n          WHERE name = 'Super Heroes DC'\n          UNION ALL\n          SELECT th.id\n          FROM themes th\n          JOIN theme_tree tt ON th.parent_id = tt.id\n      )\n      SELECT id FROM theme_tree\n  );",
+    "cypher": "MATCH (t:Theme {name: 'Super Heroes DC'})\nMATCH (sub:Theme)-[:SUBTHEME_OF*0..6]->(t)\nMATCH (s:Set)-[:IN_THEME]->(sub)\nWHERE s.year = 2022\nRETURN COUNT(DISTINCT s) AS count;",
+    "cypher_u": "MATCH (t:Theme {name: 'Super Heroes DC'})\nMATCH (sub:Theme)-[:SUBTHEME_OF*0..6]->(t)\nMATCH (s:Set)-[:IN_THEME]->(sub)\nWHERE s.year = 2022\nRETURN COUNT(DISTINCT s) AS num_sets;"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  },
+  {
+   "qid": "FLG-L03",
+   "tpl": "L1",
+   "cls": "L",
+   "text": "In which year was LEGO set 5007275-1 released?",
+   "queries": {
+    "sql": "SELECT year\nFROM sets\nWHERE set_num = '5007275-1';",
+    "sql_u": "SELECT year\nFROM sets\nWHERE set_num = '5007275-1';",
+    "cypher": "MATCH (s:Set {set_num: '5007275-1'})\nRETURN s.year;",
+    "cypher_u": "MATCH (s:Set {set_num: '5007275-1'})\nRETURN s.year;"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  },
+  {
+   "qid": "FLG-V14",
+   "tpl": "V2",
+   "cls": "V",
+   "text": "How many parts in total (sum of quantities at all levels, including nested sets and minifigs) did version 1 of the inventory of LEGO set 7971-1 contain?",
+   "queries": {
+    "sql": "WITH RECURSIVE inv AS (\n    SELECT id FROM inventories WHERE set_num = '7971-1' AND version = 1\n),\nexplode AS (\n    SELECT ip.part_num, ip.quantity AS qty\n    FROM inventory_parts ip\n    JOIN inv ON ip.inventory_id = inv.id\n    WHERE ip.is_spare = false\n    UNION ALL\n    SELECT ip.part_num, ip.quantity * e.qty\n    FROM explode e\n    JOIN inventory_sets ins ON ins.set_num = e.part_num\n    JOIN inventories i2 ON i2.set_num = ins.set_num\n        AND i2.version = (SELECT MAX(version) FROM inventories WHERE set_num = ins.set_num)\n    JOIN inventory_parts ip ON ip.inventory_id = i2.id\n    WHERE ip.is_spare = false\n)\nSELECT SUM(qty) AS total_parts FROM explode;",
+    "sql_u": "WITH RECURSIVE exploded(parent_kind, parent_num, child_kind, child_num, qty) AS (\n    -- Start with version 1 of set 7971-1's own inventory\n    SELECT parent_kind, parent_num, child_kind, child_num, qty\n    FROM u_composition\n    WHERE parent_kind = 'set'\n      AND parent_num = '7971-1'\n      AND version = 1\n      AND is_spare = FALSE\n    \n    UNION ALL\n    \n    -- Recurse into nested sets and minifigs using their current inventory (highest version)\n    SELECT u.parent_kind, u.parent_num, u.child_kind, u.child_num, e.qty * u.qty\n    FROM exploded e\n    JOIN u_composition u\n      ON e.child_kind = u.parent_kind\n     AND e.child_num = u.parent_num\n     AND u.version = (\n         SELECT MAX(version)\n         FROM u_composition u2\n         WHERE u2.parent_kind = u.parent_kind\n           AND u2.parent_num = u.parent_num\n     )\n     AND u.is_spare = FALSE\n)\nSELECT SUM(qty)\nFROM exploded\nWHERE child_kind = 'part';",
+    "cypher": "MATCH (s:Set {set_num: '7971-1'})-[:HAS_INVENTORY]->(inv:Inventory {version: 1})\nMATCH (inv)-[r:HAS_PART]->(p:Part)\nWHERE r.is_spare = false\nRETURN SUM(r.qty) AS total_parts",
+    "cypher_u": "MATCH (s:Set {set_num: '7971-1'})-[c:CONTAINS*1..6 (r, n | WHERE r.version = 1 AND r.is_spare = false)]->(p:Part)\nRETURN sum(list_product(properties(rels(c), 'qty'))) AS total_parts"
+   },
+   "from_model": {
+    "sql": "ds-flash",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-flash"
+   }
+  },
+  {
+   "qid": "FLG-E21",
+   "tpl": "E3",
+   "cls": "E",
+   "text": "How many parts in total (sum of quantities) does LEGO set 43109-1 contain at all levels, including the parts of its nested sets and minifigs?",
+   "queries": {
+    "sql": "WITH RECURSIVE current_inventory AS (\n    -- Get current inventory version for each set/fig\n    SELECT id, set_num, version,\n           ROW_NUMBER() OVER (PARTITION BY set_num ORDER BY version DESC) as rn\n    FROM inventories\n),\ncurrent_set_inventory AS (\n    -- Current inventory for set 43109-1\n    SELECT i.id, i.set_num, i.version\n    FROM inventories i\n    WHERE i.set_num = '43109-1'\n    ORDER BY i.version DESC\n    LIMIT 1\n),\nexploded_contents AS (\n    -- Base: direct parts from the set's current inventory (non-spare)\n    SELECT \n        ip.part_num,\n        ip.color_id,\n        ip.quantity as qty\n    FROM current_set_inventory csi\n    JOIN inventory_parts ip ON ip.inventory_id = csi.id\n    WHERE ip.is_spare = false\n    \n    UNION ALL\n    \n    -- Base: direct minifigs from the set's current inventory, expand their parts\n    SELECT \n        mip.part_num,\n        mip.color_id,\n        im.quantity * mip.quantity as qty\n    FROM current_set_inventory csi\n    JOIN inventory_minifigs im ON im.inventory_id = csi.id\n    JOIN current_inventory ci ON ci.set_num = im.fig_num AND ci.rn = 1\n    JOIN inventory_parts mip ON mip.inventory_id = ci.id\n    WHERE mip.is_spare = false\n    \n    UNION ALL\n    \n    -- Recursive: nested sets\n    SELECT \n        ec.part_num,\n        ec.color_id,\n        iset.quantity * ec.qty as qty\n    FROM current_set_inventory csi\n    JOIN inventory_sets iset ON iset.inventory_id = csi.id\n    JOIN exploded_contents ec ON 1=1\n    -- Need to join with the nested set's inventory... this approach needs rethinking\n),\n-- Let's rebuild with proper recursive structure\nset_parts AS (\n    -- Start with set 43109-1's current inventory\n    SELECT \n        '43109-1' as source_set,\n        ip.part_num,\n        ip.color_id,\n        ip.quantity as qty\n    FROM current_set_inventory csi\n    JOIN inventory_parts ip ON ip.inventory_id = csi.id\n    WHERE ip.is_spare = false\n    \n    UNION ALL\n    \n    -- Minifigs in the starting set\n    SELECT \n        '43109-1' as source_set,\n        mip.part_num,\n        mip.color_id,\n        im.quantity * mip.quantity as qty\n    FROM current_set_inventory csi\n    JOIN inventory_minifigs im ON im.inventory_id = csi.id\n    JOIN current_inventory ci ON ci.set_num = im.fig_num AND ci.rn = 1\n    JOIN inventory_parts mip ON mip.inventory_id = ci.id\n    WHERE mip.is_spare = false\n),\nrecursive_explode AS (\n    -- Base: parts and minifig parts from set 43109-1\n    SELECT \n        s.set_num as root_set,\n        COALESCE(ip.part_num, mip.part_num) as part_num,\n        COALESCE(ip.color_id, mip.color_id) as color_id,\n        COALESCE(ip.quantity, im.quantity * mip.quantity) as qty,\n        1 as level\n    FROM sets s\n    JOIN current_inventory ci ON ci.set_num = s.set_num AND ci.rn = 1\n    LEFT JOIN inventory_parts ip ON ip.inventory_id = ci.id AND ip.is_spare = false\n    LEFT JOIN inventory_minifigs im ON im.inventory_id = ci.id\n    LEFT JOIN current_inventory ci2 ON ci2.set_num = im.fig_num AND ci2.rn = 1\n    LEFT JOIN inventory_parts mip ON mip.inventory_id = ci2.id AND mip.is_spare = false\n    WHERE s.set_num = '43109-1'\n      AND (ip.part_num IS NOT NULL OR mip.part_num IS NOT NULL)\n    \n    UNION ALL\n    \n    -- Recursive: nested sets\n    SELECT \n        re.root_set,\n        COALESCE(ip.part_num, mip.part_num) as part_num,\n        COALESCE(ip.color_id, mip.color_id) as color_id,\n        re.qty * COALESCE(ip.quantity, iset.quantity * mip.quantity) as qty,\n        re.level + 1\n    FROM recursive_explode re\n    JOIN current_inventory ci ON ci.set_num = re.root_set AND ci.rn = 1\n    JOIN inventory_sets iset ON iset.inventory_id = ci.id\n    JOIN current_inventory ci_nested ON ci_nested.set_num = iset.set_num AND ci_nested.rn = 1\n    LEFT JOIN inventory_parts ip ON ip.inventory_id = ci_nested.id AND ip.is_spare = false\n    LEFT JOIN inventory_minifigs im ON im.inventory_id = ci_nested.id\n    LEFT JOIN current_inventory ci2 ON ci2.set_num = im.fig_num AND ci2.rn = 1\n    LEFT JOIN inventory_parts mip ON mip.inventory_id = ci2.id AND mip.is_spare = false\n    WHERE (ip.part_num IS NOT NULL OR mip.part_num IS NOT NULL)\n),\n-- Simpler correct approach\nall_parts AS (\n    -- Start with set 43109-1, multiplier 1\n    SELECT \n        '43109-1' as current_item,\n        1 as multiplier,\n        0 as depth\n    \n    UNION ALL\n    \n    -- Expand nested sets and minifigs\n    SELECT \n        COALESCE(iset.set_num, im.fig_num) as current_item,\n        ap.multiplier * COALESCE(iset.quantity, im.quantity) as multiplier,\n        ap.depth + 1\n    FROM all_parts ap\n    JOIN current_inventory ci ON ci.set_num = ap.current_item AND ci.rn = 1\n    LEFT JOIN inventory_sets iset ON iset.inventory_id = ci.id\n    LEFT JOIN inventory_minifigs im ON im.inventory_id = ci.id\n    WHERE iset.set_num IS NOT NULL OR im.fig_num IS NOT NULL\n),\n-- Get all parts from all expanded items\nitem_parts AS (\n    SELECT \n        ap.current_item,\n        ap.multiplier,\n        ip.part_num,\n        ip.color_id,\n        ap.multiplier * ip.quantity as total_qty\n    FROM all_parts ap\n    JOIN current_inventory ci ON ci.set_num = ap.current_item AND ci.rn = 1\n    JOIN inventory_parts ip ON ip.inventory_id = ci.id\n    WHERE ip.is_spare = false\n)\nSELECT COALESCE(SUM(total_qty), 0) as total_parts\nFROM item_parts",
+    "sql_u": "WITH RECURSIVE exploded(parent_kind, parent_num, child_kind, child_num, qty) AS (\n    -- Start with the current inventory of set 43109-1\n    SELECT \n        uc.parent_kind,\n        uc.parent_num,\n        uc.child_kind,\n        uc.child_num,\n        uc.qty\n    FROM u_composition uc\n    WHERE uc.parent_kind = 'set'\n      AND uc.parent_num = '43109-1'\n      AND uc.version = (\n          SELECT MAX(version)\n          FROM u_composition\n          WHERE parent_kind = 'set' AND parent_num = '43109-1'\n      )\n      AND uc.is_spare = FALSE\n\n    UNION ALL\n\n    -- Recurse into nested sets and minifigs using their current inventory\n    SELECT \n        uc.parent_kind,\n        uc.parent_num,\n        uc.child_kind,\n        uc.child_num,\n        e.qty * uc.qty\n    FROM u_composition uc\n    JOIN exploded e\n      ON (uc.parent_kind = 'set' AND e.child_kind = 'set' AND uc.parent_num = e.child_num)\n      OR (uc.parent_kind = 'minifig' AND e.child_kind = 'minifig' AND uc.parent_num = e.child_num)\n    WHERE uc.version = (\n          SELECT MAX(version)\n          FROM u_composition\n          WHERE parent_kind = uc.parent_kind AND parent_num = uc.parent_num\n      )\n      AND uc.is_spare = FALSE\n)\nSELECT SUM(qty) AS total_parts\nFROM exploded\nWHERE child_kind = 'part';",
+    "cypher": "MATCH (s:Set {set_num: '43109-1'})-[:HAS_INVENTORY]->(inv:Inventory)\nWITH s, inv\nORDER BY inv.version DESC\nLIMIT 1\nWITH s, inv AS current_inv\nMATCH (current_inv)-[r:HAS_PART]->(p:Part)\nWHERE r.is_spare = false\nWITH s, current_inv, sum(r.qty) AS direct_parts\nOPTIONAL MATCH (current_inv)-[r2:CONTAINS_SET]->(nested:Set)\nOPTIONAL MATCH (nested)-[:HAS_INVENTORY]->(nested_inv:Inventory)\nWITH s, current_inv, direct_parts, nested, nested_inv, r2\nORDER BY nested_inv.version DESC\nLIMIT 1\nWITH s, current_inv, direct_parts, nested, r2, nested_inv AS nested_current_inv\nOPTIONAL MATCH (nested_current_inv)-[r3:HAS_PART]->(np:Part)\nWHERE r3.is_spare = false\nWITH s, current_inv, direct_parts, sum(r2.qty * r3.qty) AS nested_parts\nOPTIONAL MATCH (current_inv)-[r4:CONTAINS_MINIFIG]->(mf:Minifig)\nOPTIONAL MATCH (mf)-[:HAS_INVENTORY]->(mf_inv:Inventory)\nWITH s, current_inv, direct_parts, nested_parts, mf, mf_inv, r4\nORDER BY mf_inv.version DESC\nLIMIT 1\nWITH s, current_inv, direct_parts, nested_parts, r4, mf_inv AS mf_current_inv\nOPTIONAL MATCH (mf_current_inv)-[r5:HAS_PART]->(mp:Part)\nWHERE r5.is_spare = false\nWITH s, direct_parts, nested_parts, sum(r4.qty * r5.qty) AS minifig_parts\nRETURN direct_parts + coalesce(nested_parts, 0) + coalesce(minifig_parts, 0) AS total_parts",
+    "cypher_u": "MATCH (s:Set {set_num: '43109-1'})\nMATCH (s)-[e:CONTAINS*0..6]->(p:Part)\nWHERE ALL(r IN rels(e) WHERE r.is_spare = false)\nWITH s, e, p,\n     CASE\n       WHEN size(rels(e)) = 0 THEN 1\n       ELSE list_product(properties(rels(e), 'qty'))\n     END AS multiplier\nRETURN SUM(multiplier) AS total_parts"
+   },
+   "from_model": {
+    "sql": "kimi-k2.6",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  }
+ ]
+}

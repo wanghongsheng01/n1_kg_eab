@@ -1,0 +1,800 @@
+[
+{
+"id": 1,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "LG-V03"
+},
+{
+"id": 2,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "E20"
+},
+{
+"id": 3,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "AW-A19"
+},
+{
+"id": 4,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "E29"
+},
+{
+"id": 5,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "AW-V31"
+},
+{
+"id": 6,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "AW-V27"
+},
+{
+"id": 7,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "LG-E47"
+},
+{
+"id": 8,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "AW-A26"
+},
+{
+"id": 9,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "AW-A17"
+},
+{
+"id": 10,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "LG-V24"
+},
+{
+"id": 11,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "LG-A18"
+},
+{
+"id": 12,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "W30"
+},
+{
+"id": 13,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "LG-A22"
+},
+{
+"id": 14,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "A07"
+},
+{
+"id": 15,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "AW-V15"
+},
+{
+"id": 16,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "A26"
+},
+{
+"id": 17,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "A27"
+},
+{
+"id": 18,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "E40"
+},
+{
+"id": 19,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "LG-V20"
+},
+{
+"id": 20,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "AW-A16"
+},
+{
+"id": 21,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "A04"
+},
+{
+"id": 22,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "A04"
+},
+{
+"id": 23,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "V05"
+},
+{
+"id": 24,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "AW-A16"
+},
+{
+"id": 25,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "W14"
+},
+{
+"id": 26,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "AW-A43"
+},
+{
+"id": 27,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "A32"
+},
+{
+"id": 28,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "AW-A26"
+},
+{
+"id": 29,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "AW-W36"
+},
+{
+"id": 30,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "V38"
+},
+{
+"id": 31,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "LG-V15"
+},
+{
+"id": 32,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "V07"
+},
+{
+"id": 33,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "LG-E51"
+},
+{
+"id": 34,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "LG-V28"
+},
+{
+"id": 35,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "W38"
+},
+{
+"id": 36,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "LG-A17"
+},
+{
+"id": 37,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "LG-E40"
+},
+{
+"id": 38,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "LG-W27"
+},
+{
+"id": 39,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "LG-W21"
+},
+{
+"id": 40,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "W14"
+},
+{
+"id": 41,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "sql_u",
+"qid": "W17"
+},
+{
+"id": 42,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "AW-A40"
+},
+{
+"id": 43,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "AW-A10"
+},
+{
+"id": 44,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "sql_u",
+"qid": "AW-A36"
+},
+{
+"id": 45,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "A05"
+},
+{
+"id": 46,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "A31"
+},
+{
+"id": 47,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "AW-A09"
+},
+{
+"id": 48,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "AW-A37"
+},
+{
+"id": 49,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "LG-E09"
+},
+{
+"id": 50,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "E30"
+},
+{
+"id": 51,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "AW-V42"
+},
+{
+"id": 52,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "A11"
+},
+{
+"id": 53,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "LG-A01"
+},
+{
+"id": 54,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "AW-V13"
+},
+{
+"id": 55,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "E47"
+},
+{
+"id": 56,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "V34"
+},
+{
+"id": 57,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "A03"
+},
+{
+"id": 58,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "LG-E39"
+},
+{
+"id": 59,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "W30"
+},
+{
+"id": 60,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "V09"
+},
+{
+"id": 61,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "AW-A18"
+},
+{
+"id": 62,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "W02"
+},
+{
+"id": 63,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "LG-E52"
+},
+{
+"id": 64,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "sql_u",
+"qid": "AW-A25"
+},
+{
+"id": 65,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "LG-E54"
+},
+{
+"id": 66,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "AW-A11"
+},
+{
+"id": 67,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "AW-W19"
+},
+{
+"id": 68,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "AW-V42"
+},
+{
+"id": 69,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "LG-W05"
+},
+{
+"id": 70,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "AW-A22"
+},
+{
+"id": 71,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "LG-E19"
+},
+{
+"id": 72,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "LG-V32"
+},
+{
+"id": 73,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "LG-V29"
+},
+{
+"id": 74,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "A05"
+},
+{
+"id": 75,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "AW-A15"
+},
+{
+"id": 76,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "LG-W37"
+},
+{
+"id": 77,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "LG-W40"
+},
+{
+"id": 78,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "E20"
+},
+{
+"id": 79,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "sql_u",
+"qid": "AW-A32"
+},
+{
+"id": 80,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "LG-W04"
+},
+{
+"id": 81,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "E07"
+},
+{
+"id": 82,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "AW-A12"
+},
+{
+"id": 83,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "AW-V15"
+},
+{
+"id": 84,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher",
+"qid": "AW-A14"
+},
+{
+"id": 85,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "LG-W23"
+},
+{
+"id": 86,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "AW-A13"
+},
+{
+"id": 87,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "E20"
+},
+{
+"id": 88,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "W04"
+},
+{
+"id": 89,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "sql_u",
+"qid": "A33"
+},
+{
+"id": 90,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "AW-A10"
+},
+{
+"id": 91,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "AW-V42"
+},
+{
+"id": 92,
+"dataset": "xb",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "E18"
+},
+{
+"id": 93,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "LG-V38"
+},
+{
+"id": 94,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "AW-W34"
+},
+{
+"id": 95,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "sql",
+"qid": "AW-V13"
+},
+{
+"id": 96,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "LG-W33"
+},
+{
+"id": 97,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "cypher_u",
+"qid": "LG-E20"
+},
+{
+"id": 98,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "AW-A18"
+},
+{
+"id": 99,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "LG-W20"
+},
+{
+"id": 100,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher_u",
+"qid": "E28"
+},
+{
+"id": 101,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "LG-A10"
+},
+{
+"id": 102,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "E38"
+},
+{
+"id": 103,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "LG-E21"
+},
+{
+"id": 104,
+"dataset": "lego",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "LG-A16"
+},
+{
+"id": 105,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "sql",
+"qid": "LG-E29"
+},
+{
+"id": 106,
+"dataset": "lego",
+"model": "kimi-k2.6",
+"substrate": "cypher",
+"qid": "LG-E22"
+},
+{
+"id": 107,
+"dataset": "aw",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "AW-A38"
+},
+{
+"id": 108,
+"dataset": "aw",
+"model": "kimi-k2.6",
+"substrate": "cypher_u",
+"qid": "AW-E32"
+},
+{
+"id": 109,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "A28"
+},
+{
+"id": 110,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "A32"
+},
+{
+"id": 111,
+"dataset": "xb",
+"model": "ds-flash",
+"substrate": "sql_u",
+"qid": "W34"
+},
+{
+"id": 112,
+"dataset": "aw",
+"model": "ds-pro",
+"substrate": "sql_u",
+"qid": "AW-A18"
+},
+{
+"id": 113,
+"dataset": "xb",
+"model": "ds-pro",
+"substrate": "sql",
+"qid": "A08"
+},
+{
+"id": 114,
+"dataset": "lego",
+"model": "ds-flash",
+"substrate": "cypher",
+"qid": "LG-V25"
+}
+]

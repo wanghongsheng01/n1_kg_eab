@@ -27,12 +27,13 @@ def main():
     done = set()
     if os.path.exists(out):
         done = {(d["model"], d["substrate"], d["qid"], d["rep"]) for d in map(json.loads, open(out))}
-    jobs = [r for r in todo if (r["model"], r["substrate"], r["qid"], r["rep"]) not in done]
+    skip = set(filter(None, os.environ.get("N1_RETRY_SKIP_MODELS", "").split(",")))   # models whose vendor API is gone
+    jobs = [r for r in todo if (r["model"], r["substrate"], r["qid"], r["rep"]) not in done and r["model"] not in skip]
     print(f"{src}: {len(todo)} truncated, {len(jobs)} to run", flush=True)
 
     def go(r):
         q = qs[r["qid"]]
-        rec = (run_agent.one(r["model"], q, r["rep"]) if r["substrate"] == "agent"
+        rec = (run_agent.one(r["model"], q, r["rep"]) if r["substrate"].startswith("agent")   # agent variants: N1_AGENT_VARIANT is set by the caller
                else run_pilot.one(r["model"], r["substrate"], q, r["rep"]))
         rec["retry"] = os.environ.get("N1_RETRY_TAG", "truncated")
         return rec

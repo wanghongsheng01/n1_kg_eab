@@ -1,0 +1,78 @@
+{
+ "seed": 20261109,
+ "candidates": 170,
+ "demos": [
+  {
+   "qid": "FAW-E16",
+   "tpl": "E2",
+   "cls": "E",
+   "text": "How many distinct parts (purchased components) does product BK-R50R-48 contain at any level of its current BOM?",
+   "queries": {
+    "sql": "WITH RECURSIVE bom_tree(component_id) AS (\n    SELECT b.component_id\n    FROM product p\n    JOIN bill_of_materials b ON b.assembly_id = p.product_id\n    WHERE p.product_number = 'BK-R50R-48'\n      AND b.start_date <= DATE '2025-06-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2025-06-30')\n    \n    UNION\n    \n    SELECT b.component_id\n    FROM bom_tree bt\n    JOIN bill_of_materials b ON b.assembly_id = bt.component_id\n    WHERE b.start_date <= DATE '2025-06-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2025-06-30')\n)\nSELECT COUNT(DISTINCT bt.component_id)\nFROM bom_tree bt\nJOIN product p ON p.product_id = bt.component_id\nWHERE p.make_flag = FALSE;",
+    "sql_u": "WITH RECURSIVE bom_tree AS (\n    SELECT \n        c.child_code,\n        c.qty\n    FROM u_composition c\n    WHERE c.parent_code = 'BK-R50R-48'\n      AND c.valid_from <= DATE '2025-06-30'\n      AND (c.valid_to IS NULL OR c.valid_to >= DATE '2025-06-30')\n    \n    UNION ALL\n    \n    SELECT \n        c.child_code,\n        c.qty * bt.qty\n    FROM u_composition c\n    INNER JOIN bom_tree bt ON c.parent_code = bt.child_code\n    WHERE c.valid_from <= DATE '2025-06-30'\n      AND (c.valid_to IS NULL OR c.valid_to >= DATE '2025-06-30')\n)\nSELECT COUNT(DISTINCT bt.child_code) AS distinct_parts\nFROM bom_tree bt\nINNER JOIN product p ON p.product_number = bt.child_code\nWHERE p.make_flag = FALSE;",
+    "cypher": "MATCH (root:Product {product_number: 'BK-R50R-48'})\n      -[e:HAS_SUBASSEMBLY|HAS_PART*1..20 (r, n | WHERE r.valid_from <= date('2025-06-30') AND (r.valid_to IS NULL OR r.valid_to >= date('2025-06-30')))]->\n      (part:Product)\nWHERE part.make_flag = false\nRETURN count(DISTINCT part.product_id) AS distinct_parts;",
+    "cypher_u": "MATCH (p:Product {product_number: 'BK-R50R-48'})-[e:CONTAINS*1..10]->(part:Product)\nWHERE part.make_flag = false\n  AND all(r IN rels(e) WHERE r.valid_from <= date('2025-06-30') AND (r.valid_to IS NULL OR date('2025-06-30') <= r.valid_to))\nRETURN count(DISTINCT part.product_id) AS distinct_parts;"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  },
+  {
+   "qid": "FAW-W08",
+   "tpl": "W1",
+   "cls": "W",
+   "text": "How many bikes contain component EC-M092 at any level of their current BOM (directly or inside sub-assemblies)?",
+   "queries": {
+    "sql": "WITH RECURSIVE bike_products AS (\n    SELECT p.product_id\n    FROM product p\n    JOIN product_subcategory sc ON p.subcategory_id = sc.subcategory_id\n    JOIN product_category c ON sc.category_id = c.category_id\n    WHERE c.name = 'Bikes'\n),\nbom_tree AS (\n    -- Start from the target component and walk upward to assemblies\n    SELECT \n        bom.assembly_id,\n        bom.component_id\n    FROM bill_of_materials bom\n    WHERE bom.component_id = (SELECT product_id FROM product WHERE product_number = 'EC-M092')\n      AND bom.assembly_id IS NOT NULL\n      AND bom.start_date <= DATE '2025-06-30'\n      AND (bom.end_date IS NULL OR bom.end_date >= DATE '2025-06-30')\n    \n    UNION ALL\n    \n    SELECT \n        bom.assembly_id,\n        bom.component_id\n    FROM bill_of_materials bom\n    JOIN bom_tree bt ON bom.component_id = bt.assembly_id\n    WHERE bom.assembly_id IS NOT NULL\n      AND bom.start_date <= DATE '2025-06-30'\n      AND (bom.end_date IS NULL OR bom.end_date >= DATE '2025-06-30')\n)\nSELECT COUNT(DISTINCT bt.assembly_id) AS bike_count\nFROM bom_tree bt\nJOIN bike_products bp ON bt.assembly_id = bp.product_id;",
+    "sql_u": "WITH RECURSIVE bom_tree AS (\n    SELECT \n        parent_code,\n        child_code\n    FROM u_composition\n    WHERE valid_from <= DATE '2025-06-30'\n      AND (valid_to IS NULL OR valid_to >= DATE '2025-06-30')\n    \n    UNION ALL\n    \n    SELECT \n        bt.parent_code,\n        c.child_code\n    FROM bom_tree bt\n    JOIN u_composition c \n      ON bt.child_code = c.parent_code\n    WHERE c.valid_from <= DATE '2025-06-30'\n      AND (c.valid_to IS NULL OR c.valid_to >= DATE '2025-06-30')\n)\nSELECT COUNT(DISTINCT p.product_id)\nFROM product p\nJOIN product_subcategory sc ON p.subcategory_id = sc.subcategory_id\nJOIN product_category cat ON sc.category_id = cat.category_id\nWHERE cat.name = 'Bikes'\n  AND p.product_number IN (\n      SELECT parent_code\n      FROM bom_tree\n      WHERE child_code = 'EC-M092'\n  );",
+    "cypher": "MATCH (bike:Product)-[:IN_SUBCATEGORY]->(:Subcategory)-[:IN_CATEGORY]->(:Category {name: 'Bikes'})\nMATCH (bike)-[e:HAS_SUBASSEMBLY|HAS_PART*1..10]->(comp:Product {product_number: 'EC-M092'})\nWHERE all(r IN rels(e) WHERE r.valid_from <= date('2025-06-30') AND (r.valid_to IS NULL OR r.valid_to >= date('2025-06-30')))\nRETURN count(DISTINCT bike) AS bike_count;",
+    "cypher_u": "MATCH (bike:Product)-[:IN_SUBCATEGORY]->(:Subcategory)-[:IN_CATEGORY]->(:Category {name: 'Bikes'})\nMATCH (bike)-[e:CONTAINS*1..10]->(comp:Product {product_number: 'EC-M092'})\nWHERE all(r IN rels(e) WHERE r.valid_from <= date('2025-06-30') AND (r.valid_to IS NULL OR date('2025-06-30') <= r.valid_to))\nRETURN count(DISTINCT bike) AS bike_count;"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  },
+  {
+   "qid": "FAW-L15",
+   "tpl": "L4",
+   "cls": "L",
+   "text": "In the current BOM, how many units of component BB-8107 does product BK-T44U-46 use directly per unit (first level only)?",
+   "queries": {
+    "sql": "SELECT b.per_assembly_qty\nFROM bill_of_materials b\nJOIN product assembly ON b.assembly_id = assembly.product_id\nJOIN product component ON b.component_id = component.product_id\nWHERE assembly.product_number = 'BK-T44U-46'\n  AND component.product_number = 'BB-8107'\n  AND b.bom_level = 1\n  AND b.start_date <= DATE '2025-06-30'\n  AND (b.end_date IS NULL OR b.end_date >= DATE '2025-06-30');",
+    "sql_u": "SELECT qty\nFROM u_composition\nWHERE parent_code = 'BK-T44U-46'\n  AND child_code = 'BB-8107'\n  AND valid_from <= DATE '2025-06-30'\n  AND (valid_to IS NULL OR valid_to >= DATE '2025-06-30');",
+    "cypher": "MATCH (p:Product {product_number: 'BK-T44U-46'})-[bom:HAS_SUBASSEMBLY|HAS_PART]->(c:Product {product_number: 'BB-8107'})\nWHERE bom.valid_from <= date('2025-06-30')\n  AND (bom.valid_to IS NULL OR bom.valid_to >= date('2025-06-30'))\nRETURN bom.qty AS units;",
+    "cypher_u": "MATCH (p:Product {product_number: 'BK-T44U-46'})-[c:CONTAINS]->(comp:Product {product_number: 'BB-8107'})\nWHERE c.valid_from <= date('2025-06-30')\n  AND (c.valid_to IS NULL OR date('2025-06-30') <= c.valid_to)\nRETURN c.qty AS units;"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-pro"
+   }
+  },
+  {
+   "qid": "FAW-V42",
+   "tpl": "V7x",
+   "cls": "V",
+   "text": "By how much did the total quantity of part TI-R628 per unit of product BK-R79Y-48 (all levels) change from the BOM valid on 2021-11-30 to the current BOM? Return current minus earlier.",
+   "queries": {
+    "sql": "WITH RECURSIVE bom_tree_2021 AS (\n    SELECT \n        b.component_id,\n        b.per_assembly_qty,\n        b.bom_level\n    FROM bill_of_materials b\n    JOIN product p ON b.assembly_id = p.product_id\n    WHERE p.product_number = 'BK-R79Y-48'\n      AND b.assembly_id IS NOT NULL\n      AND b.start_date <= DATE '2021-11-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2021-11-30')\n    \n    UNION ALL\n    \n    SELECT \n        b.component_id,\n        b.per_assembly_qty * bt.per_assembly_qty,\n        b.bom_level\n    FROM bill_of_materials b\n    JOIN bom_tree_2021 bt ON b.assembly_id = bt.component_id\n    JOIN product p ON b.assembly_id = p.product_id\n    WHERE p.make_flag = TRUE\n      AND b.start_date <= DATE '2021-11-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2021-11-30')\n),\nbom_tree_current AS (\n    SELECT \n        b.component_id,\n        b.per_assembly_qty,\n        b.bom_level\n    FROM bill_of_materials b\n    JOIN product p ON b.assembly_id = p.product_id\n    WHERE p.product_number = 'BK-R79Y-48'\n      AND b.assembly_id IS NOT NULL\n      AND b.start_date <= DATE '2025-06-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2025-06-30')\n    \n    UNION ALL\n    \n    SELECT \n        b.component_id,\n        b.per_assembly_qty * bt.per_assembly_qty,\n        b.bom_level\n    FROM bill_of_materials b\n    JOIN bom_tree_current bt ON b.assembly_id = bt.component_id\n    JOIN product p ON b.assembly_id = p.product_id\n    WHERE p.make_flag = TRUE\n      AND b.start_date <= DATE '2025-06-30'\n      AND (b.end_date IS NULL OR b.end_date >= DATE '2025-06-30')\n),\nqty_2021 AS (\n    SELECT COALESCE(SUM(bt.per_assembly_qty), 0) AS total_qty\n    FROM bom_tree_2021 bt\n    JOIN product p ON bt.component_id = p.product_id\n    WHERE p.product_number = 'TI-R628'\n),\nqty_current AS (\n    SELECT COALESCE(SUM(bt.per_assembly_qty), 0) AS total_qty\n    FROM bom_tree_current bt\n    JOIN product p ON bt.component_id = p.product_id\n    WHERE p.product_number = 'TI-R628'\n)\nSELECT qc.total_qty - q2021.total_qty AS change_in_qty\nFROM qty_current qc, qty_2021 q2021;",
+    "sql_u": "WITH RECURSIVE bom_2021 AS (\n    SELECT\n        child_code,\n        qty AS qty_per_unit\n    FROM u_composition\n    WHERE parent_code = 'BK-R79Y-48'\n      AND valid_from <= DATE '2021-11-30'\n      AND (valid_to IS NULL OR valid_to >= DATE '2021-11-30')\n\n    UNION ALL\n\n    SELECT\n        c.child_code,\n        c.qty * b.qty_per_unit AS qty_per_unit\n    FROM u_composition c\n    JOIN bom_2021 b ON c.parent_code = b.child_code\n    WHERE c.valid_from <= DATE '2021-11-30'\n      AND (c.valid_to IS NULL OR c.valid_to >= DATE '2021-11-30')\n),\nbom_current AS (\n    SELECT\n        child_code,\n        qty AS qty_per_unit\n    FROM u_composition\n    WHERE parent_code = 'BK-R79Y-48'\n      AND valid_from <= DATE '2025-06-30'\n      AND (valid_to IS NULL OR valid_to >= DATE '2025-06-30')\n\n    UNION ALL\n\n    SELECT\n        c.child_code,\n        c.qty * b.qty_per_unit AS qty_per_unit\n    FROM u_composition c\n    JOIN bom_current b ON c.parent_code = b.child_code\n    WHERE c.valid_from <= DATE '2025-06-30'\n      AND (c.valid_to IS NULL OR c.valid_to >= DATE '2025-06-30')\n)\nSELECT\n    COALESCE(curr.total_qty, 0) - COALESCE(prev.total_qty, 0) AS change_in_qty\nFROM\n    (SELECT SUM(qty_per_unit) AS total_qty FROM bom_2021 WHERE child_code = 'TI-R628') prev,\n    (SELECT SUM(qty_per_unit) AS total_qty FROM bom_current WHERE child_code = 'TI-R628') curr;",
+    "cypher": "WITH date('2021-11-30') AS old_date, date('2025-06-30') AS new_date\nMATCH (root:Product {product_number: 'BK-R79Y-48'})\nOPTIONAL MATCH (root)-[e_old:HAS_SUBASSEMBLY|HAS_PART*1..6]->(p_old:Product {product_number: 'TI-R628'})\nWHERE all(r IN rels(e_old) WHERE r.valid_from <= old_date AND (r.valid_to IS NULL OR old_date <= r.valid_to))\nWITH old_date, new_date, root, sum(list_product(properties(rels(e_old), 'qty'))) AS old_qty\nOPTIONAL MATCH (root)-[e_new:HAS_SUBASSEMBLY|HAS_PART*1..6]->(p_new:Product {product_number: 'TI-R628'})\nWHERE all(r IN rels(e_new) WHERE r.valid_from <= new_date AND (r.valid_to IS NULL OR new_date <= r.valid_to))\nWITH old_qty, sum(list_product(properties(rels(e_new), 'qty'))) AS new_qty\nRETURN new_qty - old_qty AS change",
+    "cypher_u": "MATCH (p:Product {product_number: 'BK-R79Y-48'})\nMATCH (part:Product {product_number: 'TI-R628'})\nMATCH path = (p)-[e:CONTAINS*0..6 (r, n | WHERE r.valid_from <= date('2021-11-30') AND (r.valid_to IS NULL OR date('2021-11-30') <= r.valid_to))]->(part)\nWITH 1 AS dummy, sum(list_product(properties(rels(e), 'qty'))) AS earlier\nMATCH (p2:Product {product_number: 'BK-R79Y-48'})\nMATCH (part2:Product {product_number: 'TI-R628'})\nMATCH path2 = (p2)-[e2:CONTAINS*0..6 (r2, n2 | WHERE r2.valid_from <= date('2025-06-30') AND (r2.valid_to IS NULL OR date('2025-06-30') <= r2.valid_to))]->(part2)\nWITH earlier, sum(list_product(properties(rels(e2), 'qty'))) AS current\nRETURN current - earlier AS change"
+   },
+   "from_model": {
+    "sql": "ds-pro",
+    "sql_u": "ds-pro",
+    "cypher": "ds-pro",
+    "cypher_u": "ds-flash"
+   }
+  }
+ ]
+}

@@ -3,7 +3,7 @@
 Every number quoted in the paper comes from this script (numbers.tex macros or generated tables).
 """
 import glob, json, os, random, re
-from collections import defaultdict
+from collections import defaultdict, Counter
 from math import comb
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -97,6 +97,29 @@ def texnum(v):
     return re.sub(r"^-(?=[0-9.])", lambda _: "\\ensuremath{-}", str(v))
 
 
+def ranks(cells, low=False):
+    """Competition rank of each printed value (1 = best; ties share a rank); None for non-numbers."""
+    v = [float(c) if re.fullmatch(r"-?[0-9]+(\.[0-9]+)?", c) else None for c in cells]
+    return [None if x is None else 1 + sum((y < x) if low else (y > x) for y in v if y is not None) for x in v]
+
+
+def marked(cells, low=False, second=True):
+    """Bold the best and underline the second-best printed value."""
+    return [f"\\textbf{{{c}}}" if r == 1 else f"\\underline{{{c}}}" if r == 2 and second else c
+            for c, r in zip(cells, ranks(cells, low))]
+
+
+def by_column(rows, low=False, second=True):
+    """Apply marked() down each column of a list of rows of cells."""
+    cols = [marked(list(col), low, second) for col in zip(*rows)]
+    return [list(r) for r in zip(*cols)]
+
+
+def count_cells(rows):
+    """Per column: how often a cell is best / second best, as 'b/s'."""
+    return [f"{sum(r[j] == 1 for r in rows)}/{sum(r[j] == 2 for r in rows)}" for j in range(len(rows[0]))]
+
+
 def macro(name, val):
     mac[name] = re.sub(r"^[+-]0$", "0", val) if isinstance(val, str) else val
 
@@ -106,6 +129,7 @@ md.append("## T1 Accuracy (%), per dataset and model; pooled row per dataset")
 md.append("| dataset | model | " + " | ".join(SN[s] for s in SUBS) + " |")
 md.append("|---|---|" + "---|" * len(SUBS))
 tex = ["\\begin{tabular}{ll" + "r" * len(SUBS) + "}", "\\toprule", " & & " + " & ".join(SN[s] for s in SUBS) + " \\\\", "\\midrule"]
+rk = []   # ranks of the per-model rows, for the count row
 for ds in DS:
     for m in MODELS + ["all"]:
         cells = []
@@ -113,10 +137,14 @@ for ds in DS:
             rs = sel(ds, None if m == "all" else m, s)
             cells.append(pct(acc(rs)) if rs else "--")
         md.append(f"| {ds} | {m} | " + " | ".join(cells) + " |")
-        tex.append(f"{DSN[ds] if m == MODELS[0] else ''} & {'pooled' if m == 'all' else MN[m]} & " + " & ".join(
-            (f"\\textbf{{{c}}}" if m == "all" else c) for c in cells) + " \\\\")
-    tex.append("\\midrule" if ds != DS[-1] else "\\bottomrule")
-tex.append("\\end{tabular}")
+        if m != "all":
+            rk.append(ranks(cells))
+        tex.append(f"{DSN[ds] if m == MODELS[0] else ''} & {'pooled' if m == 'all' else MN[m]} & " + " & ".join(marked(cells)) + " \\\\")
+    tex.append("\\midrule")
+tex += [" & best/2nd & " + " & ".join(count_cells(rk)) + " \\\\", "\\bottomrule", "\\end{tabular}"]
+for j, s_ in enumerate(SUBS):   # best / second places per substrate over the nine model rows (for the text)
+    macro(f"AccBest{SN[s_].replace('-', '')}", str(sum(r[j] == 1 for r in rk)))
+    macro(f"AccSecond{SN[s_].replace('-', '')}", str(sum(r[j] == 2 for r in rk)))
 open(os.path.join(PAPER, "tables", "acc.tex"), "w").write("\n".join(tex) + "\n")
 for s in SUBS:
     rs = sel(s=s)
@@ -163,9 +191,15 @@ md.append("|---|" + "---|" * len(SUBS))
 for c in CLS:
     md.append(f"| {c} | " + " | ".join(pct(acc(sel(s=s, c=c))) for s in SUBS) + " |")
 # transposed in the paper (substrates as rows) so that it fits one column
-tex = ["\\begin{tabular}{l" + "r" * len(CLS) + "}", "\\toprule", " & " + " & ".join(CLS) + " \\\\", "\\midrule"]
-for s in SUBS:
-    tex.append(f"{SN[s]} & " + " & ".join(pct(acc(sel(s=s, c=c))) for c in CLS) + " \\\\")
+tex = ["\\begin{tabular}{l" + "r" * len(CLS) + "r}", "\\toprule", " & " + " & ".join(CLS) + " & best/2nd \\\\", "\\midrule"]
+CSUBS = SUBS + XSUBS + ["metricflow"]   # materialized and MetricFlow rows: same questions, three main models
+rows = [[pct(acc(sel(s=s, c=c))) for c in CLS] for s in CSUBS]
+rk = list(zip(*[ranks(list(col)) for col in zip(*rows)]))   # ranks within each class (column)
+for s, cells, r in zip(CSUBS, by_column(rows), rk):
+    if s == XSUBS[0]:
+        tex.append("\\midrule")
+    tex.append(f"{SN[s]} & " + " & ".join(cells) + f" & {sum(x == 1 for x in r)}/{sum(x == 2 for x in r)} \\\\")
+    macro(f"ClassBest{SN[s].replace('-', '')}", str(sum(x == 1 for x in r)))
 tex += ["\\bottomrule", "\\end{tabular}"]
 open(os.path.join(PAPER, "tables", "class.tex"), "w").write("\n".join(tex) + "\n")
 
@@ -232,7 +266,6 @@ if A:
 md.append("\n## T7 Cost (USD per 1k questions) and latency (s, LLM + execution), per model and substrate")
 md.append("| model | " + " | ".join(SN[s] for s in SUBS) + " |")
 md.append("|---|" + "---|" * len(SUBS))
-tex = ["\\begin{tabular}{l" + "r" * len(SUBS) + "}", "\\toprule", " & " + " & ".join(SN[s] for s in SUBS) + " \\\\", "\\midrule"]
 for m in MODELS:
     cells, lat = [], []
     for s in SUBS:
@@ -241,8 +274,23 @@ for m in MODELS:
         lat.append(f"{sum(r['llm_s'] + r['exec_s'] for r in rs) / len(rs):.1f}" if rs else "--")
     md.append(f"| {m} \\$ | " + " | ".join(cells) + " |")
     md.append(f"| {m} s | " + " | ".join(lat) + " |")
-    tex.append(f"{MN[m]} (\\$) & " + " & ".join(cells) + " \\\\")
-    tex.append(f"{MN[m]} (s) & " + " & ".join(lat) + " \\\\")
+# one column in the paper: substrates as rows (with the materialized substrates and MetricFlow), models as columns
+tex = ["\\begin{tabular}{lrrrrrr}", "\\toprule", " & \\multicolumn{3}{c}{USD per 1k questions} & \\multicolumn{3}{c}{latency (s)} \\\\",
+       "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}", " & " + " & ".join(["Flash", "Pro", "Kimi"] * 2) + " \\\\", "\\midrule"]
+CSUBS = SUBS + XSUBS + ["metricflow"]
+rows = []
+for s in CSUBS:
+    usd = [f"{1000 * sum(r['usd'] for r in rs) / len(rs):.2f}" if rs else "--" for rs in (sel(m=m, s=s) for m in MODELS)]
+    lat = [f"{sum(r['llm_s'] + r['exec_s'] for r in rs) / len(rs):.1f}" if rs else "--" for rs in (sel(m=m, s=s) for m in MODELS)]
+    rows.append(usd + lat)
+crk = [ranks(list(col), low=True) for col in zip(*rows)]   # per column: ranks of the substrates
+for s, i in (("sql_x", CSUBS.index("sql_x")),):
+    macro("CostUSDTopSQLX", str(sum(c[i] <= 2 for c in crk[:3])))
+    macro("CostUSDBestSQLX", str(sum(c[i] == 1 for c in crk[:3])))
+for s, cells in zip(CSUBS, by_column(rows, low=True)):   # lowest cost and latency per column
+    if s == XSUBS[0]:
+        tex.append("\\midrule")
+    tex.append(f"{SN[s]} & " + " & ".join(cells) + " \\\\")
 tex += ["\\bottomrule", "\\end{tabular}"]
 open(os.path.join(PAPER, "tables", "cost.tex"), "w").write("\n".join(tex) + "\n")
 macro("TotalUSD", f"{sum(r['usd'] for r in idx.values() if r['substrate'] in SUBS):.0f}")
@@ -439,7 +487,25 @@ for s in SUBS:
         macro(f"CiLo{k}", f"{100 * lo:.0f}")
         macro(f"CiHi{k}", f"{100 * hi:.0f}")
 
-# (3) causes of SILENT failures only (free-query substrates), weighted by each stratum's failure count
+# (3) causes of SILENT failures only (free-query substrates), weighted by each stratum's failure count. Where the second
+# (Claude-Opus-5.5) and third (DS-V4-Pro with thinking) labelers exist, a failure gets the majority label of the three;
+# without a majority the third labeler decides.
+_lab = {}
+for _pre in ("tax2", "tax3"):
+    for ds in DS:
+        _p = os.path.join(RES, f"{_pre}_main_{ds}.jsonl")
+        if os.path.exists(_p):
+            for _l in open(_p):
+                _d = json.loads(_l)
+                _lab[(_pre, _d["dataset"], _d["model"], _d["substrate"], _d["qid"])] = _d["category"]
+if T and any(k[0] == "tax3" for k in _lab):
+    T = [dict(d) for d in T]
+    for d in T:
+        k = (d["dataset"], d["model"], d["substrate"], d["qid"])
+        c2, c3 = _lab.get(("tax2",) + k), _lab.get(("tax3",) + k)
+        if c2 and c3:
+            votes = Counter([d["category"], c2, c3]).most_common()
+            d["category"] = votes[0][0] if votes[0][1] >= 2 else c3
 if T:
     tsubs = ["sql", "sql_u", "cypher", "cypher_u"]
     keys3 = [("T2_traversal", "traversal scope"), ("T3_quantity", "quantity semantics"), ("T4_validity", "validity / version"),
@@ -466,6 +532,8 @@ if T:
             cells.append(f"{100 * num / den:.0f}" if den else "--")
             if g == "T2_traversal":
                 macro(f"SilTrav{SN[s].replace('-', '')}", f"{100 * num / den:.0f}" if den else "--")
+            if g == "T4_validity":
+                macro(f"SilVal{SN[s].replace('-', '')}", f"{100 * num / den:.0f}" if den else "--")
         tex.append(f"{lab} & " + " & ".join(cells) + " \\\\")
     tex += ["\\bottomrule", "\\end{tabular}"]
     open(os.path.join(PAPER, "tables", "silent_causes.tex"), "w").write("\n".join(tex) + "\n")
@@ -495,8 +563,8 @@ macro("AccMetricPreFix", pct(sum(r["correct"] for r in pre) / len(pre)))
 design = len({(r["dataset"], r["qid"]) for r in idx.values()}) * len(MODELS) * len(SUBS)
 macro("NDesign", f"{design:,}")
 macro("NMissing", str(design - sum(r["substrate"] in SUBS for r in idx.values())))
-sil_all = sum(r["silent"] for r in idx.values())
-fail_all = sum(not r["correct"] for r in idx.values())
+sil_all = sum(r["silent"] for r in idx.values() if r["substrate"] in SUBS)   # the main grid (Table VI)
+fail_all = sum(not r["correct"] for r in idx.values() if r["substrate"] in SUBS)
 macro("SilentAllShare", pct(sil_all / fail_all))
 # output tokens (shortest-output claim)
 for s in ("sql_u", "semantic"):
@@ -698,20 +766,27 @@ z = lambda v: f"{100 * v:+.0f}".replace("-0", "0").replace("+0", "0")
 # (11) three further models from other vendors (gateway): GPT-6-Sol, Claude-Opus-5.5, Qwen3.8-27B (open weights)
 FRM = ["gpt-6-sol", "claude-opus-5.5", "qwen3.8-27b"]
 MN.update({"gpt-6-sol": "GPT-6-Sol", "claude-opus-5.5": "Claude-Opus-5.5", "qwen3.8-27b": "Qwen3.8-27B"})
-FR = load("main_{ds}_fr*.jsonl") + load("main_{ds}_x_fr.jsonl") + load("main_{ds}_mf_fr.jsonl")
+FR = load("main_{ds}_fr.jsonl") + load("main_{ds}_fr_agent.jsonl") + load("main_{ds}_x_fr.jsonl") + load("main_{ds}_mf_fr.jsonl")
+assert {r["model"] for r in FR} <= {"gpt-6-sol", "claude-opus-5.5", "qwen3.8-27b"}, "further-model files only"
 if FR:
     fx = {(r["dataset"], r["model"], r["substrate"], r["qid"]): r for r in FR if r.get("rep", 0) == 0}
     FSUBS = SUBS + [x for x in XSUBS + ["metricflow"] if any(r["substrate"] == x for r in FR)]
     md.append("\n## T13 Further models (pooled over datasets): accuracy (%) and SQL-vs-graph effects (points, 95% CI)")
     tex = ["\\begin{tabular}{l" + "r" * len(FSUBS) + "}", "\\toprule", " & " + " & ".join(SN[s] for s in FSUBS) + " \\\\", "\\midrule"]
+    rk = []
     for m in FRM + [None]:
         cells = [pct(acc([r for r in fx.values() if r["substrate"] == s_ and (m is None or r["model"] == m)])) for s_ in FSUBS]
         md.append(f"| {m or 'pooled'} | " + " | ".join(cells) + " |")
-        tex.append((MN[m] if m else "\\textbf{pooled}") + " & " + " & ".join(cells) + " \\\\")
+        if m:
+            rk.append(ranks(cells))
+        else:
+            tex.append("\\midrule")
+        tex.append((MN[m] if m else "pooled") + " & " + " & ".join(marked(cells)) + " \\\\")
         tg = {"gpt-6-sol": "GPT", "claude-opus-5.5": "Claude", "qwen3.8-27b": "Qwen"}.get(m, "")
         for s_, c in zip(FSUBS, cells):
             macro(f"FrAcc{SN[s_].replace('-', '')}{tg}", c)
-    tex += ["\\bottomrule", "\\end{tabular}"]
+    tex += ["\\midrule", "best/2nd & " + " & ".join(count_cells(rk)) + " \\\\", "\\bottomrule", "\\end{tabular}"]
+    macro("FrBestSQLX", str(sum(r[FSUBS.index("sql_x")] == 1 for r in rk)) if "sql_x" in FSUBS else "--")
     open(os.path.join(PAPER, "tables", "frontier.tex"), "w").write("\n".join(tex) + "\n")
     for a, b, k in (("sql", "cypher", "SQLGraphT"), ("sql_u", "cypher_u", "SQLUGraphU"), ("sql_u", "sql", "SQLUSQL"),
                     ("cypher_u", "cypher", "GraphUGraphT"), ("sql_x", "sql_u", "SQLXSQLU"), ("cypher_x", "cypher_u", "GraphXGraphU")):
@@ -824,23 +899,25 @@ if sel(s="metricflow"):
 if sel(s="sql_x"):
     md.append("\n## T15 Materialized total requirements: accuracy (%) and paired effects (points, 95% CI), main models")
     tex = ["\\begin{tabular}{lrrrr}", "\\toprule", " & XB & AW & LEGO & pooled \\\\", "\\midrule"]
-    for s_ in ("sql_u", "sql_x", "cypher_u", "cypher_x"):
-        cells = [pct(acc(sel(ds, None, s_))) for ds in DS] + [pct(acc(sel(s=s_)))]
-        tex.append(f"{SN[s_]} & " + " & ".join(cells) + " \\\\")
+    XR = ("sql_u", "sql_x", "cypher_u", "cypher_x")
+    xrows = [[pct(acc(sel(ds, None, s_))) for ds in DS] + [pct(acc(sel(s=s_)))] for s_ in XR]
+    macro("ClosureBestSQLX", str(sum(c[XR.index("sql_x")] == 1 for c in (ranks(list(col)) for col in zip(*xrows)))))
+    for s_, cells, mc in zip(XR, xrows, by_column(xrows)):   # best and second best per column
+        tex.append(f"{SN[s_]} & " + " & ".join(mc) + " \\\\")
         md.append(f"| {SN[s_]} | " + " | ".join(cells) + " |")
         macro(f"Acc{SN[s_].replace('-', '')}", cells[-1])
         for ds, c in zip(DS, cells):
             macro(f"Acc{SN[s_].replace('-', '')}{DSN[ds]}", c)
+    cov = {}
     for s_ in ("semantic", "sql_u", "sql_x"):
         cells = [pct(acc(sel(ds, None, s_, cov=True))) for ds in DS] + [pct(acc(sel(s=s_, cov=True)))]
         macro(f"InCov{SN[s_].replace('-', '')}", cells[-1])
-        if s_ == "semantic":
-            tex.append("\\midrule")
-            tex.append("Metric, covered & " + " & ".join(cells) + " \\\\")
-        if s_ == "sql_x":
-            tex.append("SQL-X, covered & " + " & ".join(cells) + " \\\\")
+        if s_ in ("semantic", "sql_x"):
+            cov[s_] = cells
         for ds, c in zip(DS, cells):
             macro(f"InCov{SN[s_].replace('-', '')}{DSN[ds]}", c)
+    mc = by_column([cov["semantic"], cov["sql_x"]], second=False)   # two rows: bold the better one
+    tex += ["\\midrule", "Metric, covered & " + " & ".join(mc[0]) + " \\\\", "SQL-X, covered & " + " & ".join(mc[1]) + " \\\\"]
     tex.append("\\midrule")
     for a, b, lab in (("sql_x", "sql_u", "SQL-X $-$ SQL-U"), ("cypher_x", "cypher_u", "Graph-X $-$ Graph-U"),
                       ("sql_x", "cypher_x", "SQL-X $-$ Graph-X")):
@@ -1172,6 +1249,7 @@ for p in glob.glob(os.path.join(RES, "retry", "*.jsonl")):  # the truncated orig
 macro("StudyUSD", f"{sum(_all.values()):,.0f}")
 macro("StudyRuns", f"{len(_all):,}")
 
+# (the refusal-utility analysis is in analyze_v4.py)
 open(os.path.join(RES, "main_summary.md"), "w").write("\n".join(md) + "\n")
 with open(os.path.join(PAPER, "numbers.tex"), "w") as f:
     f.write("% generated by code/analyze_main.py -- do not edit by hand\n")

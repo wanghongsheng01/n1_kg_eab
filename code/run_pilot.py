@@ -72,6 +72,24 @@ def messages(substrate, question):
     return [{"role": "system", "content": sys_}, {"role": "user", "content": doc + "\n\nQUESTION: " + question}]
 
 
+# Few-shot condition (<base>_fs, review): three worked examples of other templates from the frozen fresh question set, the
+# same questions for every substrate, each with a query verified by execution (build_fewshot.py -> data/<ds>_fewshot.json)
+FEWSHOT = {}
+
+
+def messages_fs(base, q):
+    if not FEWSHOT:
+        FEWSHOT.update(json.load(open(os.path.join(HERE, "data", f"{dsconf.DS}_fewshot.json"))))
+    lang = "sql" if base.startswith("sql") else "cypher"
+    ex = [d for d in FEWSHOT["demos"] if d["tpl"] != q["tpl"]][:3]
+    shots = "\n\n".join(f"QUESTION: {d['text']}\n```{lang}\n{d['queries'][base]}\n```" for d in ex)
+    m = messages(base, q["text"])
+    m[1]["content"] = m[1]["content"].replace("\n\nQUESTION: " + q["text"], "\n\nWORKED EXAMPLES (other questions on this "
+                                              "database, each with a correct query):\n\n" + shots + "\n\nQUESTION: " + q["text"])
+    assert "WORKED EXAMPLES" in m[1]["content"]
+    return m
+
+
 def repair(substrate, prev_text, error):
     return {"role": "user", "content": f"Executing your query failed with this error:\n{error[:800]}\nReturn a corrected query in the same format."}
 
@@ -229,8 +247,11 @@ def one(model, substrate, q, rep):
             rec["llm_s"], rec["exec_s"] = pre["latency"], 0.0
             return rec
         msgs = messages("semantic", q["text"] + f"\n(Routing decision: use the metric `{topic}`.)")
+    elif substrate.endswith("_fs"):
+        msgs = messages_fs(substrate[:-3], q)
     else:
         msgs = messages(substrate, q["text"])
+    base = substrate[:-3] if substrate.endswith("_fs") else substrate
     rec = dict(dataset=dsconf.DS, model=model, substrate=substrate, qid=q["qid"], cls=q["cls"], tpl=q["tpl"], rep=rep, attempts=[])
     if pre is not None:
         rec["topic"] = topic
@@ -242,7 +263,7 @@ def one(model, substrate, q, rep):
         r = chat(model, msgs, rep=rep)
         t0 = time.time()
         try:
-            query, rows = execute(substrate, r["text"])
+            query, rows = execute(base, r["text"])
             err = None
         except Abstain:
             query, rows, err = None, None, "Abstain"
@@ -269,7 +290,7 @@ def one(model, substrate, q, rep):
         rec["outcome"] = "empty"
     else:
         rec["outcome"] = "wrong"
-    rec["route"] = route(substrate, rec["attempts"][-1]["text"])
+    rec["route"] = route(base, rec["attempts"][-1]["text"])
     rec["usd"] = sum(a["usd"] for a in rec["attempts"])
     rec["llm_s"] = sum(a["latency"] for a in rec["attempts"])
     rec["exec_s"] = sum(a["exec_s"] for a in rec["attempts"])
@@ -300,6 +321,11 @@ def main():
             done.add((d["model"], d["substrate"], d["qid"], d["rep"]))
     jobs = [(m, s, q) for m in a.models.split(",") for s in a.substrates.split(",") for q in qs
             if (m, s, q["qid"], a.rep) not in done]
+    if os.environ.get("N1_INTERLEAVE") == "1":   # question-major order in a seeded random question order: a partial run
+        import random                              # is a random question sample with every substrate per question
+        perm = [q["qid"] for q in qs]; random.Random(20261110).shuffle(perm)
+        order = {qid: i for i, qid in enumerate(perm)}
+        jobs.sort(key=lambda j: order[j[2]["qid"]])
     print(f"{len(jobs)} jobs", flush=True)
     by_model = {}
     for j in jobs:

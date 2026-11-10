@@ -1,0 +1,1 @@
+{'scale1_equals_benchmark_u_composition': True, 'scale1_u_composition_rows': [15831, 15831], 'scale1_u_explosion_rows_vs_benchmark': [277415, 277415], 'tiers_copy_with_3_equals_original': True}

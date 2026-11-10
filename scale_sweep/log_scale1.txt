@@ -1,0 +1,24 @@
+scale1_tiers3 source 148.85 s; u 0.57 s
+sql_x {'db': 'xb_x.duckdb', 'rows': 277415, 'stats': {'roots': 4993, 'rows_per_composition_edge': 17.52, 'rows_by_kind': {'component->component': 11978, 'model->component': 39103, 'sku->component': 220465, 'sku->model': 4666, 'sku->sku': 1203}, 'rows_closed_interval': 97909, 'max_intervals_per_pair': 7}, 'n_edges_input': 15831, 'closure_s': 13.84, 'total_build_s': 19.14, 'file_bytes': 6565888, 'base_file_bytes': 3420160}
+scale1_tiers3 source {'n_items': 7269, 'n_components': 3800, 'n_assemblies': 800, 'n_models': 800, 'n_skus': 3400, 'n_composition_edges': 15831, 'edges_by_kind': {'component->component': 5465, 'model->component': 5818, 'sku->model': 3345, 'sku->sku': 1203}, 'max_depth_any_date': 6, 'max_depth_as_of': 6, 'src_db_bytes': 4206592, 'u_db_bytes': 3420160}
+scale1_tiers3 closure {'u_explosion_rows': 277415, 'rows_per_composition_edge': 17.52, 'closure_compute_s': 13.84, 'closure_total_build_s': 19.14, 'db_bytes_without_u_explosion': 3420160, 'db_bytes_with_u_explosion': 6565888, 'u_explosion_bytes_delta': 3145728}
+scale1_tiers3 explode {'n': 100, 'recursive': {'p50_ms': 37.385, 'p95_ms': 131.927, 'mean_ms': 48.993, 'max_ms': 216.599}, 'lookup': {'p50_ms': 9.171, 'p95_ms': 43.549, 'mean_ms': 13.756, 'max_ms': 75.892}, 'speedup_p50': 4.1, 'mismatches': 0, 'answer_rows_mean': 27.2, 'answer_rows_max': 108, 'empty_answers': 0, 'root_kinds': {'sku': 64, 'component': 15, 'model': 21}}
+scale1_tiers3 where_used {'n': 100, 'recursive': {'p50_ms': 31.711, 'p95_ms': 74.775, 'mean_ms': 36.532, 'max_ms': 147.297}, 'lookup': {'p50_ms': 6.317, 'p95_ms': 32.241, 'mean_ms': 11.055, 'max_ms': 100.924}, 'speedup_p50': 5.0, 'mismatches': 0, 'answer_rows_mean': 72.5, 'answer_rows_max': 1128, 'empty_answers': 0}
+      271.36 real        35.97 user        11.59 sys
+           290144256  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              502138  page reclaims
+                1408  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+              137605  voluntary context switches
+             1038658  involuntary context switches
+        402539032790  instructions retired
+        162063955013  cycles elapsed
+           484049832  peak memory footprint

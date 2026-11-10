@@ -131,6 +131,11 @@ def start(name):
 
 
 def stop(name):
+    # a concurrent run may hold the instance (results/.neo_hold_<name> containing 1); it then stops it itself
+    hold = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results", f".neo_hold_{name}")
+    if os.path.exists(hold) and open(hold).read().strip() == "1":
+        print("held, not stopped", name)
+        return
     p = subprocess.run([os.path.join(NEO, "bin", "neo4j"), "stop"], env=env(name), capture_output=True, text=True)
     print(p.stdout[-300:], p.stderr[-300:])
 

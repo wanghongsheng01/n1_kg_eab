@@ -4,7 +4,7 @@
 # The gateway endpoint and key come from LLMHUB_BASE_URL / LLMHUB_API_KEY and are never written to disk.
 cd "$(dirname "$0")"
 PY=${PY:-python}
-DOM=ds-flash,ds-pro,kimi-k2.6
+DOM=${DOM:-ds-flash,ds-pro,kimi-k2.6}
 FR=gpt-6-sol,claude-opus-5.5,qwen3.8-27b
 qf () { [ $1 = xb ] && echo xb_questions.jsonl || echo $1_questions.jsonl; }
 cf () { [ $1 = xb ] && echo xb_s3_coverage.json || echo $1_s3_coverage.json; }

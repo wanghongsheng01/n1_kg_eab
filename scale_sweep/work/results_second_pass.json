@@ -1,0 +1,794 @@
+{
+ "repro_checks": {
+  "scale1_equals_benchmark_u_composition": true,
+  "scale1_u_composition_rows": [
+   15831,
+   15831
+  ],
+  "scale1_u_explosion_rows_vs_benchmark": [
+   277415,
+   277415
+  ],
+  "tiers_copy_with_3_equals_original": true
+ },
+ "scale10_tiers3": {
+  "closure": {
+   "closure_compute_s": 42.66,
+   "closure_total_build_s": 70.61,
+   "db_bytes_with_u_explosion": 52703232,
+   "db_bytes_without_u_explosion": 15478784,
+   "rows_per_composition_edge": 17.46,
+   "u_explosion_bytes_delta": 37224448,
+   "u_explosion_rows": 2740306
+  },
+  "closure_build": {
+   "base_file_bytes": 15478784,
+   "closure_s": 42.66,
+   "db": "xb_x.duckdb",
+   "file_bytes": 52703232,
+   "n_edges_input": 156907,
+   "rows": 2740306,
+   "stats": {
+    "max_intervals_per_pair": 6,
+    "roots": 49944,
+    "rows_by_kind": {
+     "component->component": 115027,
+     "model->component": 372977,
+     "sku->component": 2193540,
+     "sku->model": 46865,
+     "sku->sku": 11897
+    },
+    "rows_closed_interval": 900869,
+    "rows_per_composition_edge": 17.46
+   },
+   "total_build_s": 70.61
+  },
+  "closure_build_first_run": {
+   "base_file_bytes": 15478784,
+   "closure_s": 37.62,
+   "db": "xb_x.duckdb",
+   "file_bytes": 52703232,
+   "n_edges_input": 156907,
+   "rows": 2740306,
+   "stats": {
+    "max_intervals_per_pair": 6,
+    "roots": 49944,
+    "rows_by_kind": {
+     "component->component": 115027,
+     "model->component": 372977,
+     "sku->component": 2193540,
+     "sku->model": 46865,
+     "sku->sku": 11897
+    },
+    "rows_closed_interval": 900869,
+    "rows_per_composition_edge": 17.46
+   },
+   "total_build_s": 73.98
+  },
+  "finished": "2026-11-10T13:16:28",
+  "generator": "code/make_sources.build_xb (unchanged)",
+  "load_avg_at_end": [
+   24.095703125,
+   26.61962890625,
+   34.5537109375
+  ],
+  "machine": {
+   "cpu": "Apple M4",
+   "duckdb": "1.4.5",
+   "load_avg_at_start": [
+    21.1552734375,
+    27.73681640625,
+    36.01220703125
+   ],
+   "mem_bytes": 17179869184,
+   "ncpu": 10,
+   "os": "macOS-15.0-arm64-arm-64bit",
+   "python": "3.9.6"
+  },
+  "peak_rss_bytes_process": 1576910848,
+  "queries": {
+   "explode": {
+    "answer_rows_max": 146,
+    "answer_rows_mean": 27.9,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 9.828,
+     "mean_ms": 4.62,
+     "p50_ms": 4.413,
+     "p95_ms": 6.482
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 39.792,
+     "mean_ms": 16.803,
+     "p50_ms": 16.718,
+     "p95_ms": 26.464
+    },
+    "root_kinds": {
+     "component": 17,
+     "model": 13,
+     "sku": 70
+    },
+    "speedup_p50": 3.8
+   },
+   "sample": {
+    "as_of": "2026-10-01",
+    "n_candidate_leaves": 22702,
+    "n_candidate_roots": 49944,
+    "seed": 20261102,
+    "timing": "per key: 1 warm-up run of each query, then 5 alternating timed runs; per-key median; p50/p95 over the 100 keys"
+   },
+   "where_used": {
+    "answer_rows_max": 1440,
+    "answer_rows_mean": 88.8,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 20.718,
+     "mean_ms": 8.797,
+     "p50_ms": 8.038,
+     "p95_ms": 14.198
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 46.705,
+     "mean_ms": 18.599,
+     "p50_ms": 14.999,
+     "p95_ms": 40.243
+    },
+    "speedup_p50": 1.9
+   }
+  },
+  "scale": 10.0,
+  "seed": 20261102,
+  "source": {
+   "edges_by_kind": {
+    "component->component": 54207,
+    "model->component": 57221,
+    "sku->model": 33582,
+    "sku->sku": 11897
+   },
+   "max_depth_any_date": 6,
+   "max_depth_as_of": 6,
+   "n_assemblies": 8000,
+   "n_components": 38000,
+   "n_composition_edges": 156907,
+   "n_items": 72646,
+   "n_models": 8000,
+   "n_skus": 34000,
+   "src_db_bytes": 13643776,
+   "u_db_bytes": 15478784
+  },
+  "source_build_s": 1212.43,
+  "started": "2026-11-10T13:14:41",
+  "tiers": 3,
+  "u_build_s": 0.52
+ },
+ "scale1_tiers3": {
+  "closure": {
+   "closure_compute_s": 1.42,
+   "closure_total_build_s": 1.7,
+   "db_bytes_with_u_explosion": 6565888,
+   "db_bytes_without_u_explosion": 3420160,
+   "rows_per_composition_edge": 17.52,
+   "u_explosion_bytes_delta": 3145728,
+   "u_explosion_rows": 277415
+  },
+  "closure_build": {
+   "base_file_bytes": 3420160,
+   "closure_s": 1.42,
+   "db": "xb_x.duckdb",
+   "file_bytes": 6565888,
+   "n_edges_input": 15831,
+   "rows": 277415,
+   "stats": {
+    "max_intervals_per_pair": 7,
+    "roots": 4993,
+    "rows_by_kind": {
+     "component->component": 11978,
+     "model->component": 39103,
+     "sku->component": 220465,
+     "sku->model": 4666,
+     "sku->sku": 1203
+    },
+    "rows_closed_interval": 97909,
+    "rows_per_composition_edge": 17.52
+   },
+   "total_build_s": 1.7
+  },
+  "closure_build_first_run": {
+   "base_file_bytes": 3420160,
+   "closure_s": 13.84,
+   "db": "xb_x.duckdb",
+   "file_bytes": 6565888,
+   "n_edges_input": 15831,
+   "rows": 277415,
+   "stats": {
+    "max_intervals_per_pair": 7,
+    "roots": 4993,
+    "rows_by_kind": {
+     "component->component": 11978,
+     "model->component": 39103,
+     "sku->component": 220465,
+     "sku->model": 4666,
+     "sku->sku": 1203
+    },
+    "rows_closed_interval": 97909,
+    "rows_per_composition_edge": 17.52
+   },
+   "total_build_s": 19.14
+  },
+  "finished": "2026-11-10T13:13:33",
+  "generator": "code/make_sources.build_xb (unchanged)",
+  "load_avg_at_end": [
+   20.50830078125,
+   29.775390625,
+   37.36376953125
+  ],
+  "machine": {
+   "cpu": "Apple M4",
+   "duckdb": "1.4.5",
+   "load_avg_at_start": [
+    22.78125,
+    30.51708984375,
+    37.71142578125
+   ],
+   "mem_bytes": 17179869184,
+   "ncpu": 10,
+   "os": "macOS-15.0-arm64-arm-64bit",
+   "python": "3.9.6"
+  },
+  "peak_rss_bytes_process": 548945920,
+  "queries": {
+   "explode": {
+    "answer_rows_max": 108,
+    "answer_rows_mean": 27.2,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 3.264,
+     "mean_ms": 1.777,
+     "p50_ms": 1.734,
+     "p95_ms": 2.874
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 10.82,
+     "mean_ms": 5.036,
+     "p50_ms": 4.851,
+     "p95_ms": 7.714
+    },
+    "root_kinds": {
+     "component": 15,
+     "model": 21,
+     "sku": 64
+    },
+    "speedup_p50": 2.8
+   },
+   "sample": {
+    "as_of": "2026-10-01",
+    "n_candidate_leaves": 2276,
+    "n_candidate_roots": 4993,
+    "seed": 20261102,
+    "timing": "per key: 1 warm-up run of each query, then 5 alternating timed runs; per-key median; p50/p95 over the 100 keys"
+   },
+   "where_used": {
+    "answer_rows_max": 1128,
+    "answer_rows_mean": 72.5,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 2.346,
+     "mean_ms": 1.1,
+     "p50_ms": 0.988,
+     "p95_ms": 1.822
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 10.397,
+     "mean_ms": 2.978,
+     "p50_ms": 2.421,
+     "p95_ms": 6.931
+    },
+    "speedup_p50": 2.4
+   }
+  },
+  "scale": 1.0,
+  "seed": 20261102,
+  "source": {
+   "edges_by_kind": {
+    "component->component": 5465,
+    "model->component": 5818,
+    "sku->model": 3345,
+    "sku->sku": 1203
+   },
+   "max_depth_any_date": 6,
+   "max_depth_as_of": 6,
+   "n_assemblies": 800,
+   "n_components": 3800,
+   "n_composition_edges": 15831,
+   "n_items": 7269,
+   "n_models": 800,
+   "n_skus": 3400,
+   "src_db_bytes": 4206592,
+   "u_db_bytes": 3420160
+  },
+  "source_build_s": 148.85,
+  "started": "2026-11-10T13:13:24",
+  "tiers": 3,
+  "u_build_s": 0.57
+ },
+ "scale1_tiers5": {
+  "closure": {
+   "closure_compute_s": 4.07,
+   "closure_total_build_s": 4.79,
+   "db_bytes_with_u_explosion": 8663040,
+   "db_bytes_without_u_explosion": 3420160,
+   "rows_per_composition_edge": 28.91,
+   "u_explosion_bytes_delta": 5242880,
+   "u_explosion_rows": 456599
+  },
+  "closure_build": {
+   "base_file_bytes": 3420160,
+   "closure_s": 4.07,
+   "db": "xb_x.duckdb",
+   "file_bytes": 8663040,
+   "n_edges_input": 15795,
+   "rows": 456599,
+   "stats": {
+    "max_intervals_per_pair": 11,
+    "roots": 4993,
+    "rows_by_kind": {
+     "component->component": 21064,
+     "model->component": 65186,
+     "sku->component": 364481,
+     "sku->model": 4667,
+     "sku->sku": 1201
+    },
+    "rows_closed_interval": 199619,
+    "rows_per_composition_edge": 28.91
+   },
+   "total_build_s": 4.79
+  },
+  "closure_build_first_run": {
+   "base_file_bytes": 3420160,
+   "closure_s": 38.62,
+   "db": "xb_x.duckdb",
+   "file_bytes": 8663040,
+   "n_edges_input": 15795,
+   "rows": 456599,
+   "stats": {
+    "max_intervals_per_pair": 11,
+    "roots": 4993,
+    "rows_by_kind": {
+     "component->component": 21064,
+     "model->component": 65186,
+     "sku->component": 364481,
+     "sku->model": 4667,
+     "sku->sku": 1201
+    },
+    "rows_closed_interval": 199619,
+    "rows_per_composition_edge": 28.91
+   },
+   "total_build_s": 58.26
+  },
+  "finished": "2026-11-10T13:16:44",
+  "generator": "scale_sweep/make_xb_tiers.build_xb(tiers=5)",
+  "load_avg_at_end": [
+   21.05908203125,
+   25.82177734375,
+   34.1298828125
+  ],
+  "machine": {
+   "cpu": "Apple M4",
+   "duckdb": "1.4.5",
+   "load_avg_at_start": [
+    24.095703125,
+    26.61962890625,
+    34.5537109375
+   ],
+   "mem_bytes": 17179869184,
+   "ncpu": 10,
+   "os": "macOS-15.0-arm64-arm-64bit",
+   "python": "3.9.6"
+  },
+  "peak_rss_bytes_process": 627490816,
+  "queries": {
+   "explode": {
+    "answer_rows_max": 132,
+    "answer_rows_mean": 39.2,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 4.103,
+     "mean_ms": 2.567,
+     "p50_ms": 2.619,
+     "p95_ms": 3.527
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 19.922,
+     "mean_ms": 7.717,
+     "p50_ms": 7.196,
+     "p95_ms": 13.422
+    },
+    "root_kinds": {
+     "component": 15,
+     "model": 21,
+     "sku": 64
+    },
+    "speedup_p50": 2.7
+   },
+   "sample": {
+    "as_of": "2026-10-01",
+    "n_candidate_leaves": 2278,
+    "n_candidate_roots": 4993,
+    "seed": 20261102,
+    "timing": "per key: 1 warm-up run of each query, then 5 alternating timed runs; per-key median; p50/p95 over the 100 keys"
+   },
+   "where_used": {
+    "answer_rows_max": 398,
+    "answer_rows_mean": 52.6,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 4.265,
+     "mean_ms": 1.958,
+     "p50_ms": 1.819,
+     "p95_ms": 2.844
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 14.056,
+     "mean_ms": 4.969,
+     "p50_ms": 3.844,
+     "p95_ms": 11.209
+    },
+    "speedup_p50": 2.1
+   }
+  },
+  "scale": 1.0,
+  "seed": 20261102,
+  "source": {
+   "edges_by_kind": {
+    "component->component": 5424,
+    "model->component": 5825,
+    "sku->model": 3345,
+    "sku->sku": 1201
+   },
+   "max_depth_any_date": 8,
+   "max_depth_as_of": 8,
+   "n_assemblies": 800,
+   "n_components": 3800,
+   "n_composition_edges": 15795,
+   "n_items": 7271,
+   "n_models": 800,
+   "n_skus": 3400,
+   "src_db_bytes": 4206592,
+   "u_db_bytes": 3420160
+  },
+  "source_build_s": 275.53,
+  "started": "2026-11-10T13:16:29",
+  "tiers": 5,
+  "u_build_s": 0.99
+ },
+ "scale3_tiers3": {
+  "closure": {
+   "closure_compute_s": 5.45,
+   "closure_total_build_s": 6.52,
+   "db_bytes_with_u_explosion": 15478784,
+   "db_bytes_without_u_explosion": 5255168,
+   "rows_per_composition_edge": 17.4,
+   "u_explosion_bytes_delta": 10223616,
+   "u_explosion_rows": 815433
+  },
+  "closure_build": {
+   "base_file_bytes": 5255168,
+   "closure_s": 5.45,
+   "db": "xb_x.duckdb",
+   "file_bytes": 15478784,
+   "n_edges_input": 46856,
+   "rows": 815433,
+   "stats": {
+    "max_intervals_per_pair": 7,
+    "roots": 14980,
+    "rows_by_kind": {
+     "component->component": 34368,
+     "model->component": 112316,
+     "sku->component": 651134,
+     "sku->model": 14036,
+     "sku->sku": 3579
+    },
+    "rows_closed_interval": 269634,
+    "rows_per_composition_edge": 17.4
+   },
+   "total_build_s": 6.52
+  },
+  "closure_build_first_run": {
+   "base_file_bytes": 5255168,
+   "closure_s": 53.13,
+   "db": "xb_x.duckdb",
+   "file_bytes": 16003072,
+   "n_edges_input": 46856,
+   "rows": 815433,
+   "stats": {
+    "max_intervals_per_pair": 7,
+    "roots": 14980,
+    "rows_by_kind": {
+     "component->component": 34368,
+     "model->component": 112316,
+     "sku->component": 651134,
+     "sku->model": 14036,
+     "sku->sku": 3579
+    },
+    "rows_closed_interval": 269634,
+    "rows_per_composition_edge": 17.4
+   },
+   "total_build_s": 81.46
+  },
+  "finished": "2026-11-10T13:13:57",
+  "generator": "code/make_sources.build_xb (unchanged)",
+  "load_avg_at_end": [
+   17.20068359375,
+   28.2509765625,
+   36.59375
+  ],
+  "machine": {
+   "cpu": "Apple M4",
+   "duckdb": "1.4.5",
+   "load_avg_at_start": [
+    20.50830078125,
+    29.775390625,
+    37.36376953125
+   ],
+   "mem_bytes": 17179869184,
+   "ncpu": 10,
+   "os": "macOS-15.0-arm64-arm-64bit",
+   "python": "3.9.6"
+  },
+  "peak_rss_bytes_process": 1390854144,
+  "queries": {
+   "explode": {
+    "answer_rows_max": 110,
+    "answer_rows_mean": 29.6,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 4.627,
+     "mean_ms": 3.254,
+     "p50_ms": 3.221,
+     "p95_ms": 4.09
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 19.142,
+     "mean_ms": 11.091,
+     "p50_ms": 11.648,
+     "p95_ms": 15.24
+    },
+    "root_kinds": {
+     "component": 16,
+     "model": 10,
+     "sku": 74
+    },
+    "speedup_p50": 3.6
+   },
+   "sample": {
+    "as_of": "2026-10-01",
+    "n_candidate_leaves": 6796,
+    "n_candidate_roots": 14980,
+    "seed": 20261102,
+    "timing": "per key: 1 warm-up run of each query, then 5 alternating timed runs; per-key median; p50/p95 over the 100 keys"
+   },
+   "where_used": {
+    "answer_rows_max": 1128,
+    "answer_rows_mean": 44.3,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 6.835,
+     "mean_ms": 3.504,
+     "p50_ms": 3.344,
+     "p95_ms": 4.502
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 20.802,
+     "mean_ms": 8.835,
+     "p50_ms": 7.207,
+     "p95_ms": 17.832
+    },
+    "speedup_p50": 2.2
+   }
+  },
+  "scale": 3.0,
+  "seed": 20261102,
+  "source": {
+   "edges_by_kind": {
+    "component->component": 16218,
+    "model->component": 17014,
+    "sku->model": 10045,
+    "sku->sku": 3579
+   },
+   "max_depth_any_date": 6,
+   "max_depth_as_of": 6,
+   "n_assemblies": 2400,
+   "n_components": 11400,
+   "n_composition_edges": 46856,
+   "n_items": 21776,
+   "n_models": 2400,
+   "n_skus": 10200,
+   "src_db_bytes": 6041600,
+   "u_db_bytes": 5255168
+  },
+  "source_build_s": 892.0,
+  "started": "2026-11-10T13:13:33",
+  "tiers": 3,
+  "u_build_s": 0.82
+ },
+ "scale6_tiers3": {
+  "closure": {
+   "closure_compute_s": 12.4,
+   "closure_total_build_s": 15.19,
+   "db_bytes_with_u_explosion": 31731712,
+   "db_bytes_without_u_explosion": 10235904,
+   "rows_per_composition_edge": 17.52,
+   "u_explosion_bytes_delta": 21495808,
+   "u_explosion_rows": 1652957
+  },
+  "closure_build": {
+   "base_file_bytes": 10235904,
+   "closure_s": 12.4,
+   "db": "xb_x.duckdb",
+   "file_bytes": 31731712,
+   "n_edges_input": 94340,
+   "rows": 1652957,
+   "stats": {
+    "max_intervals_per_pair": 6,
+    "roots": 29961,
+    "rows_by_kind": {
+     "component->component": 69066,
+     "model->component": 225379,
+     "sku->component": 1322943,
+     "sku->model": 28302,
+     "sku->sku": 7267
+    },
+    "rows_closed_interval": 547177,
+    "rows_per_composition_edge": 17.52
+   },
+   "total_build_s": 15.19
+  },
+  "closure_build_first_run": {
+   "base_file_bytes": 10235904,
+   "closure_s": 23.62,
+   "db": "xb_x.duckdb",
+   "file_bytes": 31993856,
+   "n_edges_input": 94340,
+   "rows": 1652957,
+   "stats": {
+    "max_intervals_per_pair": 6,
+    "roots": 29961,
+    "rows_by_kind": {
+     "component->component": 69066,
+     "model->component": 225379,
+     "sku->component": 1322943,
+     "sku->model": 28302,
+     "sku->sku": 7267
+    },
+    "rows_closed_interval": 547177,
+    "rows_per_composition_edge": 17.52
+   },
+   "total_build_s": 37.34
+  },
+  "finished": "2026-11-10T13:14:40",
+  "generator": "code/make_sources.build_xb (unchanged)",
+  "load_avg_at_end": [
+   21.1552734375,
+   27.73681640625,
+   36.01220703125
+  ],
+  "machine": {
+   "cpu": "Apple M4",
+   "duckdb": "1.4.5",
+   "load_avg_at_start": [
+    17.20068359375,
+    28.2509765625,
+    36.59375
+   ],
+   "mem_bytes": 17179869184,
+   "ncpu": 10,
+   "os": "macOS-15.0-arm64-arm-64bit",
+   "python": "3.9.6"
+  },
+  "peak_rss_bytes_process": 1809006592,
+  "queries": {
+   "explode": {
+    "answer_rows_max": 140,
+    "answer_rows_mean": 26.0,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 7.187,
+     "mean_ms": 4.033,
+     "p50_ms": 3.9,
+     "p95_ms": 6.09
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 26.883,
+     "mean_ms": 15.046,
+     "p50_ms": 14.318,
+     "p95_ms": 22.585
+    },
+    "root_kinds": {
+     "component": 16,
+     "model": 10,
+     "sku": 74
+    },
+    "speedup_p50": 3.7
+   },
+   "sample": {
+    "as_of": "2026-10-01",
+    "n_candidate_leaves": 13702,
+    "n_candidate_roots": 29961,
+    "seed": 20261102,
+    "timing": "per key: 1 warm-up run of each query, then 5 alternating timed runs; per-key median; p50/p95 over the 100 keys"
+   },
+   "where_used": {
+    "answer_rows_max": 1347,
+    "answer_rows_mean": 65.9,
+    "empty_answers": 0,
+    "lookup": {
+     "max_ms": 12.994,
+     "mean_ms": 6.886,
+     "p50_ms": 6.723,
+     "p95_ms": 9.1
+    },
+    "mismatch_examples": [],
+    "mismatches": 0,
+    "n": 100,
+    "recursive": {
+     "max_ms": 35.565,
+     "mean_ms": 16.206,
+     "p50_ms": 14.842,
+     "p95_ms": 32.424
+    },
+    "speedup_p50": 2.2
+   }
+  },
+  "scale": 6.0,
+  "seed": 20261102,
+  "source": {
+   "edges_by_kind": {
+    "component->component": 32704,
+    "model->component": 34178,
+    "sku->model": 20191,
+    "sku->sku": 7267
+   },
+   "max_depth_any_date": 6,
+   "max_depth_as_of": 6,
+   "n_assemblies": 4800,
+   "n_components": 22800,
+   "n_composition_edges": 94340,
+   "n_items": 43663,
+   "n_models": 4800,
+   "n_skus": 20400,
+   "src_db_bytes": 9449472,
+   "u_db_bytes": 10235904
+  },
+  "source_build_s": 183.55,
+  "started": "2026-11-10T13:13:57",
+  "tiers": 3,
+  "u_build_s": 0.59
+ }
+}
