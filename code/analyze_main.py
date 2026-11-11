@@ -275,8 +275,8 @@ for m in MODELS:
     md.append(f"| {m} \\$ | " + " | ".join(cells) + " |")
     md.append(f"| {m} s | " + " | ".join(lat) + " |")
 # one column in the paper: substrates as rows (with the materialized substrates and MetricFlow), models as columns
-tex = ["\\begin{tabular}{lrrrrrr}", "\\toprule", " & \\multicolumn{3}{c}{USD per 1k questions} & \\multicolumn{3}{c}{latency (s)} \\\\",
-       "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}", " & " + " & ".join(["Flash", "Pro", "Kimi"] * 2) + " \\\\", "\\midrule"]
+tex = ["\\begin{tabular}{lrrrrrrr}", "\\toprule", " & \\multicolumn{3}{c}{USD per 1k} & \\multicolumn{3}{c}{latency (s)} & \\\\",
+       "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}", " & " + " & ".join(["Flash", "Pro", "Kimi"] * 2) + " & best/2nd \\\\", "\\midrule"]
 CSUBS = SUBS + XSUBS + ["metricflow"]
 rows = []
 for s in CSUBS:
@@ -287,10 +287,16 @@ crk = [ranks(list(col), low=True) for col in zip(*rows)]   # per column: ranks o
 for s, i in (("sql_x", CSUBS.index("sql_x")),):
     macro("CostUSDTopSQLX", str(sum(c[i] <= 2 for c in crk[:3])))
     macro("CostUSDBestSQLX", str(sum(c[i] == 1 for c in crk[:3])))
-for s, cells in zip(CSUBS, by_column(rows, low=True)):   # lowest cost and latency per column
+for i, (s, cells) in enumerate(zip(CSUBS, by_column(rows, low=True))):   # lowest cost and latency per column
     if s == XSUBS[0]:
         tex.append("\\midrule")
-    tex.append(f"{SN[s]} & " + " & ".join(cells) + " \\\\")
+    cnt = f"{sum(c[i] == 1 for c in crk)}/{sum(c[i] == 2 for c in crk)}"   # lowest / second-lowest places of the substrate
+    tex.append(f"{SN[s]} & " + " & ".join(cells) + f" & {cnt} \\\\")
+# why the cheapest/fastest substrate differs by model: mean output tokens per run (Kimi-K2.6 writes the longest queries)
+for m, mn in (("ds-flash", "Flash"), ("kimi-k2.6", "Kimi")):
+    for s in ("sql_x", "cypher_x", "semantic"):
+        rs = sel(m=m, s=s)
+        macro(f"OutTok{mn}{SN[s].replace('-', '')}", f"{sum(r['out_tok'] for r in rs) / len(rs):.0f}")
 tex += ["\\bottomrule", "\\end{tabular}"]
 open(os.path.join(PAPER, "tables", "cost.tex"), "w").write("\n".join(tex) + "\n")
 macro("TotalUSD", f"{sum(r['usd'] for r in idx.values() if r['substrate'] in SUBS):.0f}")
@@ -898,12 +904,13 @@ if sel(s="metricflow"):
 # (13) RQ6: materialized total-requirements relation (SQL-X, Graph-X) against the best substrates
 if sel(s="sql_x"):
     md.append("\n## T15 Materialized total requirements: accuracy (%) and paired effects (points, 95% CI), main models")
-    tex = ["\\begin{tabular}{lrrrr}", "\\toprule", " & XB & AW & LEGO & pooled \\\\", "\\midrule"]
+    tex = ["\\begin{tabular}{lrrrrr}", "\\toprule", " & XB & AW & LEGO & pooled & best/2nd \\\\", "\\midrule"]
     XR = ("sql_u", "sql_x", "cypher_u", "cypher_x")
     xrows = [[pct(acc(sel(ds, None, s_))) for ds in DS] + [pct(acc(sel(s=s_)))] for s_ in XR]
     macro("ClosureBestSQLX", str(sum(c[XR.index("sql_x")] == 1 for c in (ranks(list(col)) for col in zip(*xrows)))))
-    for s_, cells, mc in zip(XR, xrows, by_column(xrows)):   # best and second best per column
-        tex.append(f"{SN[s_]} & " + " & ".join(mc) + " \\\\")
+    xrk = [ranks(list(col)) for col in zip(*xrows)]
+    for i, (s_, cells, mc) in enumerate(zip(XR, xrows, by_column(xrows))):   # best and second best per column
+        tex.append(f"{SN[s_]} & " + " & ".join(mc) + f" & {sum(c[i] == 1 for c in xrk)}/{sum(c[i] == 2 for c in xrk)} \\\\")
         md.append(f"| {SN[s_]} | " + " | ".join(cells) + " |")
         macro(f"Acc{SN[s_].replace('-', '')}", cells[-1])
         for ds, c in zip(DS, cells):
@@ -917,7 +924,9 @@ if sel(s="sql_x"):
         for ds, c in zip(DS, cells):
             macro(f"InCov{SN[s_].replace('-', '')}{DSN[ds]}", c)
     mc = by_column([cov["semantic"], cov["sql_x"]], second=False)   # two rows: bold the better one
-    tex += ["\\midrule", "Metric, covered & " + " & ".join(mc[0]) + " \\\\", "SQL-X, covered & " + " & ".join(mc[1]) + " \\\\"]
+    crk2 = [ranks(list(col)) for col in zip(cov["semantic"], cov["sql_x"])]
+    tex += ["\\midrule", "Metric, covered & " + " & ".join(mc[0]) + f" & {sum(c[0] == 1 for c in crk2)}/-- \\\\",
+            "SQL-X, covered & " + " & ".join(mc[1]) + f" & {sum(c[1] == 1 for c in crk2)}/-- \\\\"]
     tex.append("\\midrule")
     for a, b, lab in (("sql_x", "sql_u", "SQL-X $-$ SQL-U"), ("cypher_x", "cypher_u", "Graph-X $-$ Graph-U"),
                       ("sql_x", "cypher_x", "SQL-X $-$ Graph-X")):
@@ -928,7 +937,7 @@ if sel(s="sql_x"):
             if e:
                 k = SN[a].replace("-", "") + SN[b].replace("-", "") + (DSN[ds] if ds else "All")
                 macro(f"Eff{k}", f"{100 * e[0]:.0f}"); macro(f"EffLo{k}", f"{100 * e[1]:.0f}"); macro(f"EffHi{k}", f"{100 * e[2]:.0f}")
-        tex.append(f"{lab} & " + " & ".join(cells) + " \\\\")
+        tex.append(f"{lab} & " + " & ".join(cells) + " & \\\\")
         md.append(f"| {lab} | " + " | ".join(cells) + " |")
     # covered questions: SQL-X against the metric layer (paired on covered questions only)
     ixc = {k: r for k, r in idx.items() if r["cov"]}
