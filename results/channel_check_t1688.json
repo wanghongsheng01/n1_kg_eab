@@ -1,0 +1,10 @@
+{
+ "n": 100,
+ "agreement": 0.96,
+ "acc_gateway": 0.98,
+ "acc_t1688": 0.98,
+ "discordant_gateway_only": 2,
+ "discordant_t1688_only": 2,
+ "p_exact": 1.0,
+ "merge": true
+}

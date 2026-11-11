@@ -398,6 +398,18 @@ for f in ("main_{ds}_fr.jsonl", "main_{ds}_x_fr.jsonl"):
     FRB.update(loadf(f))
 FRN = dict(FRB)
 _NEO = {k: r for k, r in loadf("main_{ds}_fr_neo.jsonl").items() if k[2] in ("neo_t", "neo_u")}
+# Claude-Opus-5.5's truncated LEGO Neo4j runs re-run through a third-party provider (run_v4h.sh) enter only if the
+# paired channel check (channel_check_t1688.py) finds that provider equivalent to the gateway on the same cells
+_T1 = os.path.join(RES, "channel_check_t1688.json")
+T1688 = json.load(open(_T1)) if os.path.exists(_T1) else None
+_t1 = loadf("retry_t1688/main_{ds}_fr_neo.jsonl") if T1688 and T1688["merge"] else {}
+_NEO.update({k: r for k, r in _t1.items() if k in _NEO and trunc_(_NEO[k])})
+if T1688:
+    macro("TOneN", str(T1688["n"])); macro("TOneAgree", pct(T1688["agreement"]))
+    macro("TOneAccT", pct(T1688["acc_t1688"])); macro("TOneAccG", pct(T1688["acc_gateway"])); macro("TOneRuns", str(len(_t1)))
+macro("FrTOneSentence", (f" Claude-Opus-5.5's {len(_t1)} truncated LEGO runs were re-run through a second provider after a paired check on "
+                         f"{T1688['n']} runs of the same cells found it equivalent to the gateway (verdict agreement {pct(T1688['agreement'])}\\%, "
+                         f"accuracy {pct(T1688['acc_t1688'])}\\% vs.\\ {pct(T1688['acc_gateway'])}\\%).") if _t1 else "")
 _have = defaultdict(set)
 for d, m, s_, q in _NEO:
     _have[(d, m)].add((s_, q))
@@ -467,10 +479,29 @@ if KT:
             OUTMD.append(f"- Kimi K3.1 Pro thinking {nm}: {z(e[0])} [{z(e[1])}, {z(e[2])}]")
     macro("KtThRuns", f"{len(KT):,}")
     macro("KtThOutTok", f"{sum(r['out_tok'] for r in KT.values()) / len(KT):,.0f}")
+# two further thinking models on Volcengine Ark (run_v4g.sh), each its own column: GLM-5.3-Flash (Ark) is a different model
+# and channel from the gateway's GLM-5.3 and never merged with it; Doubao-Seed-2.1-Pro (ByteDance) adds a seventh vendor.
+# (GLM-5.2 on Ark, main_*_think_glm52.jsonl, reasoned for minutes per call and was stopped after a few runs; not analysed.)
+G2T = complete({(d, "glm-5.3-flash-ark", s_, q): r for (d, m, s_, q), r in loadf("main_{ds}_think_glm53f.jsonl").items()})
+DBT = complete({(d, "doubao-seed-2.1-pro", s_, q): r for (d, m, s_, q), r in loadf("main_{ds}_think_doubao.jsonl").items()})
+for pre, nm, ix in (("GlFlTh", "GLM-5.3-Flash (Ark)", G2T), ("DbTh", "Doubao-Seed-2.1-Pro", DBT)):
+    if not ix:
+        continue
+    for s_ in THS:
+        macro(f"{pre}Acc{K(s_)}", pct(acc([r for k, r in ix.items() if k[2] == s_])))
+    for a, b, en in EFF:
+        mk(f"{pre}Eff{en}", eff(ix, a, b))
+        e = eff(ix, a, b)
+        if e:
+            OUTMD.append(f"- {nm} thinking {en}: {z(e[0])} [{z(e[1])}, {z(e[2])}]")
+    macro(f"{pre}Runs", f"{len(ix):,}")
+    macro(f"{pre}OutTok", f"{sum(r['out_tok'] for r in ix.values()) / len(ix):,.0f}")
 # coverage of the three further thinking models: complete datasets, or the seeded random sample finished so far
 _nq = {d: sum(1 for _ in open(os.path.join(HERE, "data", f"{d}_questions.jsonl"))) for d in DS}
 _cov = []
-for nm, ix in (("Qwen3.8-27B", QT), ("GLM-5.3", GLT), ("Kimi-K3.1-Pro", KT)):
+for nm, ix in (("Qwen3.8-27B", QT), ("GLM-5.3", GLT), ("Kimi-K3.1-Pro", KT), ("GLM-5.3-Flash (Ark)", G2T), ("Doubao-Seed-2.1-Pro", DBT)):
+    if not ix:
+        continue
     qs = {(k[0], k[3]) for k in ix}
     full = [d for d in DS if sum(q[0] == d for q in qs) == _nq[d]]
     part = [d for d in DS if d not in full and any(q[0] == d for q in qs)]
@@ -482,6 +513,24 @@ for nm, ix in (("Qwen3.8-27B", QT), ("GLM-5.3", GLT), ("Kimi-K3.1-Pro", KT)):
         _cov.append(f"{nm} on every {' and '.join(DSN[d] for d in full)} question"
                     + "".join(f" and a seeded random sample of {sum(q[0] == d for q in qs):,} {DSN[d]} questions" for d in part))
 macro("ThFurtherCoverage", "; ".join(_cov) + "; each sampled question ran on all five substrates")
+# where the store gap of the further thinking models lies: per-dataset SQL minus Graph-T (point estimates); LEGO only for
+# models with at least 30 complete LEGO questions, so that GLM-5.3-Flash (Ark), stopped after a few LEGO questions, is not read as LEGO evidence
+_g_xa, _g_lg = [], []
+for ix in (GLT, KT, G2T, DBT):
+    if not ix:
+        continue
+    for d in ("xb", "aw"):
+        e = eff(ix, "sql", "cypher", d)
+        if e:
+            _g_xa.append(round(100 * e[0]))
+    if len({k[3] for k in ix if k[0] == "lego"}) >= 30:
+        e = eff(ix, "sql", "cypher", "lego")
+        if e:
+            _g_lg.append(round(100 * e[0]))
+if _g_xa and _g_lg:
+    macro("ThFurGapXBAWLo", str(min(_g_xa))); macro("ThFurGapXBAWHi", str(max(_g_xa)))
+    macro("ThFurGapLEGOLo", str(min(_g_lg))); macro("ThFurGapLEGOHi", str(max(_g_lg)))
+    macro("GlFlThLEGOQ", str(len({k[3] for k in G2T if k[0] == "lego"})))
 # Kimi-K2.6 runs of the final round that hit the output cap and could not be re-run (vendor account ended)
 _kt = 0
 for f in ("fs", "fresh2", "fresh3", "fresh_neo", "fresh_agent", "agent_strict", "agent_unified"):
@@ -489,7 +538,7 @@ for f in ("fs", "fresh2", "fresh3", "fresh_neo", "fresh_agent", "agent_strict", 
         _kt += r["model"] == "kimi-k2.6" and trunc_(r)
 macro("KimiTruncKept", str(_kt))
 # further-model Neo4j runs that hit the output cap and were not re-run (Qwen3.8-27B is not re-run; Claude's LEGO re-runs await the gateway)
-_ft = sum(trunc_(r) for r in loadf("main_{ds}_fr_neo.jsonl").values())
+_ft = sum(trunc_(r) for r in _NEO.values())
 macro("FrTruncKeptSentence", f" Likewise, {_ft} truncated Neo4j runs of the further models keep their first result." if _ft else "")
 # Kimi-K2.6 with thinking: complete on XB, part of AW (vendor account exhausted; the author decided against a top-up)
 kt = [k for k in TH if k[1] == "kimi-k2.6"]
@@ -502,7 +551,8 @@ COND = [("main", idx, [("sql", "cypher"), ("sql_u", "cypher_u")]), ("neo4j", NEO
         ("few-shot", FSX, [("sql", "cypher"), ("sql_u", "cypher_u")]), ("thinking", TH, [("sql", "cypher"), ("sql_u", "cypher_u")]),
         ("further", FRB, [("sql", "cypher"), ("sql_u", "cypher_u")]), ("further-neo4j", FRN, [("sql", "neo_t"), ("sql_u", "neo_u")]),
         ("qwen-thinking", QT, [("sql", "cypher"), ("sql_u", "cypher_u")]), ("glm-thinking", GLT, [("sql", "cypher"), ("sql_u", "cypher_u")]),
-        ("kimi3-thinking", KT, [("sql", "cypher"), ("sql_u", "cypher_u")])]
+        ("kimi3-thinking", KT, [("sql", "cypher"), ("sql_u", "cypher_u")]),
+        ("glm53f-ark-thinking", G2T, [("sql", "cypher"), ("sql_u", "cypher_u")]), ("doubao-thinking", DBT, [("sql", "cypher"), ("sql_u", "cypher_u")])]
 wins, ntest = [], 0
 for nm, ix, pairs in COND:
     for m in sorted({k[1] for k in ix}):
@@ -540,7 +590,7 @@ for title, ix, effs, ms in blocks:
         cells = [fmt(eff(ix, a, b, ds, models=ms)) for ds in DS + [None]]
         rows_.append(f"{lab} & " + " & ".join(cells) + " \\\\")
 rows_ += ["\\bottomrule", "\\end{tabular}"]
-open(os.path.join(PAPER, "tables", "effects_all.tex"), "w").write("\n".join(rows_) + "\n")
+open(os.path.join(PAPER, "tables", "effects_all.tex"), "w").write(re.sub(r"(?<=[\s\[,(])-(?=\d)", r"\\textminus{}", "\n".join(rows_)) + "\n")
 for ds in DS:
     mk(f"NeoUNeoT{DSN[ds]}", eff(NEO, "neo_u", "neo_t", ds, models=MODELS), sign=True)
 
@@ -641,6 +691,10 @@ if GLT:
     rk_th["glm-5.3"] = standing(GLT, "glm-5.3", THS)
 if KT:
     rk_th["kimi-k3.1-pro"] = standing(KT, "kimi-k3.1-pro", THS)
+if G2T:
+    rk_th["glm-5.3-flash-ark"] = standing(G2T, "glm-5.3-flash-ark", THS)
+if DBT:
+    rk_th["doubao-seed-2.1-pro"] = standing(DBT, "doubao-seed-2.1-pro", THS)
 OUTMD.append("\n## Standing of SQL-X (rank among all substrates, printed pooled accuracy)")
 for lab, rk in (("no thinking", {**rk_main, **rk_fr}), ("thinking", rk_th)):
     for m, (r_, a) in rk.items():

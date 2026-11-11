@@ -207,7 +207,7 @@ open(os.path.join(PAPER, "tables", "class.tex"), "w").write("\n".join(tex) + "\n
 md.append("\n## T4 Failure visibility (pooled): failures, silent share, refusals, errors")
 md.append("| substrate | runs | failures | silent | silent % of failures | single NULL | refused | error/timeout/empty |")
 md.append("|---|---|---|---|---|---|---|---|")
-tex = ["\\begin{tabular}{lrrrrr}", "\\toprule", " & acc. & failures & silent & NULL & silent share \\\\", "\\midrule"]
+tex = ["\\begin{tabular}{lrrrrr}", "\\toprule", " & acc. (\\%) & failures & silent & NULL & silent share (\\%) \\\\", "\\midrule"]
 for s in SUBS:
     rs = sel(s=s)
     if not rs:
@@ -217,7 +217,7 @@ for s in SUBS:
     ref = sum(r["refused"] for r in f)
     nul = sum(r["null"] for r in f)
     md.append(f"| {SN[s]} | {len(rs)} | {len(f)} | {sil} | {pct(sil / len(f)) if f else '--'} | {nul} | {ref} | {len(f) - sil - ref - nul} |")
-    tex.append(f"{SN[s]} & {pct(acc(rs))} & {len(f)} & {sil} & {nul} & {pct(sil / len(f)) if f else '--'}\\% \\\\")
+    tex.append(f"{SN[s]} & {pct(acc(rs))} & {len(f)} & {sil} & {nul} & {pct(sil / len(f)) if f else '--'} \\\\")
     macro(f"Silent{SN[s].replace('-', '')}", pct(sil / len(f)) if f else "--")
 tex += ["\\bottomrule", "\\end{tabular}"]
 open(os.path.join(PAPER, "tables", "silent.tex"), "w").write("\n".join(tex) + "\n")
@@ -473,7 +473,7 @@ for (a, b, fac, lab), (_, cells) in zip(EFFECTS, rows):
     md.append(f"| {fac} | " + " | ".join(fm) + " |")
     tex.append(f"{lab} & " + " & ".join(ft) + " \\\\")
 tex += ["\\bottomrule", "\\end{tabular}"]
-open(os.path.join(PAPER, "tables", "effects.tex"), "w").write("\n".join(tex) + "\n")
+open(os.path.join(PAPER, "tables", "effects.tex"), "w").write(re.sub(r"(?<=[\s\[,(])-(?=\d)", r"\\textminus{}", "\n".join(tex)) + "\n")  # typographic minus for negative numbers
 macro("NTemplates", str(len({(r["dataset"], r["tpl"]) for r in idx.values()})))
 
 # (2) accuracy with template-clustered CIs per substrate (pooled)
@@ -939,7 +939,7 @@ if sel(s="sql_x"):
             macro(f"Eff{k}", f"{100 * e[0]:.0f}"); macro(f"EffLo{k}", f"{100 * e[1]:.0f}"); macro(f"EffHi{k}", f"{100 * e[2]:.0f}")
             md.append(f"- SQL-X vs Metric (covered) {ds or 'all'}: {z(e[0])} [{z(e[1])}, {z(e[2])}]")
     tex += ["\\bottomrule", "\\end{tabular}"]
-    open(os.path.join(PAPER, "tables", "closure.tex"), "w").write("\n".join(tex) + "\n")
+    open(os.path.join(PAPER, "tables", "closure.tex"), "w").write(re.sub(r"(?<=[\s\[,(])-(?=\d)", r"\\textminus{}", "\n".join(tex)) + "\n")
     for s_ in XSUBS:
         f = [r for r in sel(s=s_) if not r["correct"]]
         macro(f"Silent{SN[s_].replace('-', '')}", pct(sum(r["silent"] for r in f) / len(f)) if f else "--")

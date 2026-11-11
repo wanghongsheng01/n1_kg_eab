@@ -31,10 +31,21 @@ def main():
     jobs = [r for r in todo if (r["model"], r["substrate"], r["qid"], r["rep"]) not in done and r["model"] not in skip]
     print(f"{src}: {len(todo)} truncated, {len(jobs)} to run", flush=True)
 
+    # N1_RETRY_VIA=claude-opus-5.5:claude-t1688 re-runs a model through another channel; the record keeps the original
+    # model name and is marked with the channel, so analyze_v4.py merges it only if the paired channel check agrees
+    via = dict(x.split(":") for x in filter(None, os.environ.get("N1_RETRY_VIA", "").split(",")))
+    if via:   # only runs that are still truncated in the current file (earlier gateway re-runs already applied)
+        cur = [r for r in map(json.loads, open(os.path.join(RES, src))) if truncated(r) and r["model"] in via]
+        jobs = [r for r in cur if (r["model"], r["substrate"], r["qid"], r["rep"]) not in done]
+        print(f"{src}: {len(jobs)} to run through {via}", flush=True)
+
     def go(r):
         q = qs[r["qid"]]
-        rec = (run_agent.one(r["model"], q, r["rep"]) if r["substrate"].startswith("agent")   # agent variants: N1_AGENT_VARIANT is set by the caller
-               else run_pilot.one(r["model"], r["substrate"], q, r["rep"]))
+        m = via.get(r["model"], r["model"])
+        rec = (run_agent.one(m, q, r["rep"]) if r["substrate"].startswith("agent")   # agent variants: N1_AGENT_VARIANT is set by the caller
+               else run_pilot.one(m, r["substrate"], q, r["rep"]))
+        if m != r["model"]:
+            rec["model"], rec["channel"] = r["model"], m
         rec["retry"] = os.environ.get("N1_RETRY_TAG", "truncated")
         return rec
 

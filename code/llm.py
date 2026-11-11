@@ -21,18 +21,27 @@ MODELS = {"ds-flash": ("deepseek", "deepseek-flash"), "ds-pro": ("deepseek", "de
           "ds-flash-think": ("deepseek", "deepseek-flash"),  # review round: DS-Flash with thinking enabled
           "ds-pro-think": ("deepseek", "deepseek-v4-pro"), "kimi-think": ("kimi", "kimi-k2.6"),
           "qwen-think": ("llmhub", "Qwen3.8-27B"), "glm-think": ("llmhub", "glm-5.3"),
-          "kimi3-think": ("ark", "kimi-k3-1-pro-261024")}  # Kimi K3.1 Pro on Volcengine Ark (a newer model, not Kimi-K2.6)  # thinking switched on through the gateway's extra_body
+          "kimi3-think": ("ark", "kimi-k3-1-pro-261024"),
+          "glm52-think": ("ark", "glm-5-2-260617"),  # GLM-5.2 on Ark: a separate channel and model, never merged with the gateway's glm-5.3
+          "glm53f-think": ("ark", "glm-5-3-flash-260828"),  # GLM-5.3-Flash on Ark (GLM-5.2 on Ark was too slow with thinking): its own column
+          "doubao-think": ("ark", "doubao-seed-2-1-pro-260915"),  # ByteDance Doubao-Seed-2.1-Pro on Ark
+          "claude-t1688": ("t1688", "claude-opus-5-5")}  # Claude-Opus-5.5 through a second, third-party provider (separate channel)  # Kimi K3.1 Pro on Volcengine Ark (a newer model, not Kimi-K2.6)  # thinking switched on through the gateway's extra_body
 OFF = {"thinking": {"type": "disabled"}}
 FIXED = {"ds-flash": OFF, "ds-pro": OFF, "glm-flash": OFF, "glm-air": OFF, "kimi-k2.6": {**OFF, "temperature": 0.6},
          "claude-opus-5.5": {"temperature": None}, "ds-flash-think": {"thinking": {"type": "enabled"}},
          "ds-pro-think": {"thinking": {"type": "enabled"}}, "kimi-think": {"thinking": {"type": "enabled"}, "temperature": 1.0},
          "qwen-think": {"extra_body": {"chat_template_kwargs": {"enable_thinking": True}}, "temperature": 0.6},
          "glm-think": {"thinking": {"type": "enabled"}, "temperature": 0.6},
-         "kimi3-think": {"thinking": {"type": "enabled"}, "temperature": 1.0}}  # the gateway's Claude endpoint rejects the temperature parameter
+         "kimi3-think": {"thinking": {"type": "enabled"}, "temperature": 1.0},
+         "glm52-think": {"thinking": {"type": "enabled"}, "temperature": 0.6},
+         "glm53f-think": {"thinking": {"type": "enabled"}, "temperature": 0.6},
+         "doubao-think": {"thinking": {"type": "enabled"}, "temperature": 1.0},
+         "claude-t1688": {"temperature": None}}  # the gateway's Claude endpoint rejects the temperature parameter
 # USD per 1M tokens (input, output); list prices used by the sibling sessions on 2026-11-03
 PRICES = {"glm-flash": (0.0, 0.0), "glm-air": (0.20, 1.10), "ds-flash": (0.30, 1.20), "ds-pro": (1.32, 3.96),
           "kimi-k2.6": (0.95, 4.00), "gpt-6-sol": (0.0, 0.0), "claude-opus-5.5": (0.0, 0.0),
-          "qwen3.8-27b": (0.0, 0.0), "ds-flash-think": (0.30, 1.20), "ds-pro-think": (1.32, 3.96), "kimi-think": (0.95, 4.00), "qwen-think": (0.0, 0.0), "glm-think": (0.0, 0.0), "kimi3-think": (0.0, 0.0)}
+          "qwen3.8-27b": (0.0, 0.0), "ds-flash-think": (0.30, 1.20), "ds-pro-think": (1.32, 3.96), "kimi-think": (0.95, 4.00), "qwen-think": (0.0, 0.0), "glm-think": (0.0, 0.0), "kimi3-think": (0.0, 0.0),
+          "glm52-think": (0.0, 0.0), "doubao-think": (0.0, 0.0), "glm53f-think": (0.0, 0.0), "claude-t1688": (0.0, 0.0)}
 # gpt-6-sol and claude-opus-5.5 are served through the organisation's OpenAI-compatible gateway (no list price recorded;
 # tokens are reported instead); its endpoint and key come only from LLMHUB_BASE_URL / LLMHUB_API_KEY, never from disk
 DAILY_CAP = float(os.environ.get("DAILY_CAP", 6.0))   # this session's share
@@ -93,6 +102,8 @@ def chat(model, messages, temperature=0.0, max_tokens=1500, rep=0, retries=8):
         cfg, err = {"base_url": os.environ["LLMHUB_BASE_URL"], "api_key": os.environ["LLMHUB_API_KEY"]}, None
     elif prov == "ark":   # Volcengine Ark; endpoint and key only from ARK_BASE_URL / ARK_API_KEY (read from the Keychain at launch)
         cfg, err = {"base_url": os.environ["ARK_BASE_URL"], "api_key": os.environ["ARK_API_KEY"]}, None
+    elif prov == "t1688":   # third-party OpenAI-compatible provider; endpoint and key only from T1688_BASE_URL / T1688_API_KEY
+        cfg, err = {"base_url": os.environ["T1688_BASE_URL"], "api_key": os.environ["T1688_API_KEY"]}, None
     elif prov == "kimi" and os.environ.get("N1_KIMI_GATEWAY") == "1":
         # the same Kimi-K2.6 model served through the organisation's gateway (used after the vendor account ran out of
         # balance on 2026-11-10); the request is unchanged except for the gateway's model id, so the cache key is the same
